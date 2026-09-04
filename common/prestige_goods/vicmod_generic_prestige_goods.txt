@@ -1,12 +1,17 @@
-# Полный аудит vanilla goods без prestige good.
-# Источник списка товаров: 00_goods.txt из ТЗ.
-# services / transportation / electricity не определяются: это local goods,
-# для которых prestige goods не работают в текущей механике игры.
+# Generic prestige goods, которых не хватает стандартным company copies.
+# Merchant Marine здесь не дублируется: prestige_good_generic_merchant_marine
+# уже существует в vanilla и используется нашей port-company напрямую.
 
 prestige_good_vicmod_generic_wood = {
 	base_good = wood
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/wood.dds"
+}
+
+prestige_good_vicmod_generic_hardwood = {
+	base_good = hardwood
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/hardwood.dds"
 }
 
 prestige_good_vicmod_generic_rubber = {
@@ -21,16 +26,112 @@ prestige_good_vicmod_generic_coal = {
 	texture = "gfx/interface/icons/goods_icons/coal.dds"
 }
 
+prestige_good_vicmod_generic_sulfur = {
+	base_good = sulfur
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/sulfur.dds"
+}
+
 prestige_good_vicmod_generic_lead = {
 	base_good = lead
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/lead.dds"
 }
 
-prestige_good_vicmod_generic_ammunition = {
-	base_good = ammunition
+prestige_good_vicmod_generic_iron = {
+	base_good = iron
 	prestige_bonus = 0.1
-	texture = "gfx/interface/icons/goods_icons/ammunition.dds"
+	texture = "gfx/interface/icons/goods_icons/iron.dds"
+}
+
+prestige_good_vicmod_generic_gold = {
+	base_good = gold
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/gold.dds"
+}
+
+prestige_good_vicmod_generic_oil = {
+	base_good = oil
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/oil.dds"
+}
+
+prestige_good_vicmod_generic_fabric = {
+	base_good = fabric
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/fabric.dds"
+}
+
+prestige_good_vicmod_generic_fruit = {
+	base_good = fruit
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/fruit.dds"
+}
+
+prestige_good_vicmod_generic_wine = {
+	base_good = wine
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/wine.dds"
+}
+
+prestige_good_vicmod_generic_dye = {
+	base_good = dye
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/dye.dds"
+}
+
+prestige_good_vicmod_generic_silk = {
+	base_good = silk
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/silk.dds"
+}
+
+prestige_good_vicmod_generic_tea = {
+	base_good = tea
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/tea.dds"
+}
+
+prestige_good_vicmod_generic_tobacco = {
+	base_good = tobacco
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/tobacco.dds"
+}
+
+prestige_good_vicmod_generic_sugar = {
+	base_good = sugar
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/sugar.dds"
+}
+
+prestige_good_vicmod_generic_liquor = {
+	base_good = liquor
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/liquor.dds"
+}
+
+prestige_good_vicmod_generic_luxury_furniture = {
+	base_good = luxury_furniture
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/luxury_furniture.dds"
+}
+
+prestige_good_vicmod_generic_luxury_clothes = {
+	base_good = luxury_clothes
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/luxury_clothes.dds"
+}
+
+prestige_good_vicmod_generic_porcelain = {
+	base_good = porcelain
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/porcelain.dds"
+}
+
+prestige_good_vicmod_generic_fine_art = {
+	base_good = fine_art
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/fine_art.dds"
 }
 
 prestige_good_vicmod_generic_tanks = {
@@ -45,22 +146,16 @@ prestige_good_vicmod_generic_aeroplanes = {
 	texture = "gfx/interface/icons/goods_icons/aeroplanes.dds"
 }
 
-prestige_good_vicmod_generic_clippers = {
-	base_good = clippers
+prestige_good_vicmod_generic_ammunition = {
+	base_good = ammunition
 	prestige_bonus = 0.1
-	texture = "gfx/interface/icons/goods_icons/clippers.dds"
+	texture = "gfx/interface/icons/goods_icons/ammunition.dds"
 }
 
-prestige_good_vicmod_generic_manowars = {
-	base_good = manowars
+prestige_good_vicmod_generic_engines = {
+	base_good = engines
 	prestige_bonus = 0.1
-	texture = "gfx/interface/icons/goods_icons/man_o_wars.dds"
-}
-
-prestige_good_vicmod_generic_gold = {
-	base_good = gold
-	prestige_bonus = 0.1
-	texture = "gfx/interface/icons/goods_icons/gold.dds"
+	texture = "gfx/interface/icons/goods_icons/locomotives.dds"
 }
 
 # Prestige-варианты новых товаров из пункта B.
