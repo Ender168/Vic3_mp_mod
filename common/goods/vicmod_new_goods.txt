@@ -1,0 +1,39 @@
+# Новые товары. Иконки пока используют ванильные ассеты, чтобы мод не зависел от новых DDS.
+
+spices = {
+	texture = "gfx/interface/icons/goods_icons/tea.dds"
+	cost = 50
+	category = luxury
+	obsession_chance = 1.0
+	prestige_factor = 6
+	traded_quantity = 5
+	convoy_cost_multiplier = 0.5
+	consumption_tax_cost = 200
+}
+
+horses = {
+	texture = "gfx/interface/icons/goods_icons/meat.dds"
+	cost = 40
+	category = industrial
+	prestige_factor = 4
+	traded_quantity = 5
+	convoy_cost_multiplier = 0.5
+}
+
+machine_tools = {
+	texture = "gfx/interface/icons/goods_icons/tools.dds"
+	cost = 60
+	category = industrial
+	prestige_factor = 8
+	traded_quantity = 4
+	convoy_cost_multiplier = 1.0
+}
+
+copper = {
+	texture = "gfx/interface/icons/goods_icons/iron.dds"
+	cost = 40
+	category = industrial
+	prestige_factor = 5
+	traded_quantity = 5
+	convoy_cost_multiplier = 0.5
+}

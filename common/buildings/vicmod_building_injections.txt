@@ -1,0 +1,39 @@
+# Источники предложения
+INJECT:building_tea_plantation = {
+	production_method_groups = { pmg_vicmod_spice_cultivation }
+}
+INJECT:building_coffee_plantation = {
+	production_method_groups = { pmg_vicmod_spice_cultivation }
+}
+INJECT:building_livestock_ranch = {
+	production_method_groups = { pmg_vicmod_horse_breeding }
+}
+INJECT:building_tooling_workshop = {
+	production_method_groups = { pmg_vicmod_machine_tool_production }
+}
+INJECT:building_iron_mine = {
+	production_method_groups = { pmg_vicmod_copper_recovery }
+}
+INJECT:building_lead_mine = {
+	production_method_groups = { pmg_vicmod_copper_recovery }
+}
+
+# Источники промышленного спроса
+INJECT:building_food_industry = {
+	production_method_groups = { pmg_vicmod_spice_processing }
+}
+INJECT:building_steel_mill = {
+	production_method_groups = { pmg_vicmod_precision_equipment }
+}
+INJECT:building_motor_industry = {
+	production_method_groups = {
+		pmg_vicmod_precision_equipment
+		pmg_vicmod_copper_wiring
+	}
+}
+INJECT:building_electrics_industry = {
+	production_method_groups = {
+		pmg_vicmod_precision_equipment
+		pmg_vicmod_copper_wiring
+	}
+}

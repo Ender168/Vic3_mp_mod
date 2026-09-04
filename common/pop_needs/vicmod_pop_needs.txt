@@ -1,0 +1,19 @@
+# Специи потребляются обеспеченными слоями как luxury food.
+INJECT:popneed_luxury_food = {
+	entry = {
+		goods = spices
+		weight = 1.25
+		max_supply_share = 0.35
+		min_supply_share = 0.0
+	}
+}
+
+# Лошади выступают ранним заменителем/дополнением транспорта в потребности free movement.
+INJECT:popneed_free_movement = {
+	entry = {
+		goods = horses
+		weight = 0.75
+		max_supply_share = 0.30
+		min_supply_share = 0.0
+	}
+}

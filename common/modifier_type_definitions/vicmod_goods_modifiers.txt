@@ -1,0 +1,10 @@
+# Dynamic modifier types required for goods used by production methods.
+
+goods_input_spices_add = { decimals = 1 color = bad percent = no game_data = { ai_value = 0 } }
+goods_output_spices_add = { decimals = 1 color = good percent = no game_data = { ai_value = 0 } }
+goods_input_horses_add = { decimals = 1 color = bad percent = no game_data = { ai_value = 0 } }
+goods_output_horses_add = { decimals = 1 color = good percent = no game_data = { ai_value = 0 } }
+goods_input_machine_tools_add = { decimals = 1 color = bad percent = no game_data = { ai_value = 0 } }
+goods_output_machine_tools_add = { decimals = 1 color = good percent = no game_data = { ai_value = 0 } }
+goods_input_copper_add = { decimals = 1 color = bad percent = no game_data = { ai_value = 0 } }
+goods_output_copper_add = { decimals = 1 color = good percent = no game_data = { ai_value = 0 } }

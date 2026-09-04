@@ -1,0 +1,59 @@
+# Производство новых товаров
+
+pmg_vicmod_spice_cultivation = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_base.dds"
+	production_methods = {
+		pm_vicmod_no_spices
+		pm_vicmod_spice_cultivation
+		pm_vicmod_intensive_spice_cultivation
+	}
+}
+
+pmg_vicmod_horse_breeding = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_base.dds"
+	production_methods = {
+		pm_vicmod_no_horse_breeding
+		pm_vicmod_horse_breeding
+	}
+}
+
+pmg_vicmod_machine_tool_production = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_base.dds"
+	production_methods = {
+		pm_vicmod_no_machine_tools
+		pm_vicmod_precision_machine_tools
+	}
+}
+
+pmg_vicmod_copper_recovery = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+	production_methods = {
+		pm_vicmod_no_copper_recovery
+		pm_vicmod_copper_recovery
+	}
+}
+
+# Спрос со стороны зданий
+pmg_vicmod_spice_processing = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_refining.dds"
+	production_methods = {
+		pm_vicmod_no_spice_processing
+		pm_vicmod_spiced_food_processing
+	}
+}
+
+pmg_vicmod_precision_equipment = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_automation.dds"
+	production_methods = {
+		pm_vicmod_standard_equipment
+		pm_vicmod_machine_tool_equipment
+	}
+}
+
+pmg_vicmod_copper_wiring = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_automation.dds"
+	production_methods = {
+		pm_vicmod_no_copper_wiring
+		pm_vicmod_copper_wiring
+	}
+}

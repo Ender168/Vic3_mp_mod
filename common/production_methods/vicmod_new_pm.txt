@@ -1,0 +1,149 @@
+# -----------------------------
+# Специи
+# -----------------------------
+pm_vicmod_no_spices = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_spice_cultivation = {
+	texture = "gfx/interface/icons/production_method_icons/mechanical_harvesting.dds"
+	building_modifiers = {
+		workforce_scaled = {
+			goods_output_spices_add = 10
+		}
+		level_scaled = {
+			building_employment_laborers_add = 500
+		}
+	}
+}
+
+pm_vicmod_intensive_spice_cultivation = {
+	texture = "gfx/interface/icons/production_method_icons/mechanical_harvesting.dds"
+	unlocking_technologies = { mechanical_tools }
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_fertilizer_add = 2
+			goods_input_tools_add = 2
+			goods_output_spices_add = 20
+		}
+		level_scaled = {
+			building_employment_laborers_add = 250
+			building_employment_machinists_add = 250
+		}
+	}
+}
+
+# -----------------------------
+# Лошади
+# -----------------------------
+pm_vicmod_no_horse_breeding = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_horse_breeding = {
+	texture = "gfx/interface/icons/production_method_icons/large_sheep_ranch.dds"
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_grain_add = 5
+			goods_output_horses_add = 12
+		}
+		level_scaled = {
+			building_employment_farmers_add = 500
+		}
+	}
+}
+
+# -----------------------------
+# Станки
+# -----------------------------
+pm_vicmod_no_machine_tools = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_precision_machine_tools = {
+	texture = "gfx/interface/icons/production_method_icons/steel_tools.dds"
+	unlocking_technologies = { mechanical_tools }
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_steel_add = 8
+			goods_input_tools_add = 4
+			goods_output_machine_tools_add = 12
+		}
+		level_scaled = {
+			building_employment_laborers_add = -500
+			building_employment_machinists_add = 500
+		}
+	}
+}
+
+# -----------------------------
+# Медь
+# -----------------------------
+pm_vicmod_no_copper_recovery = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_copper_recovery = {
+	texture = "gfx/interface/icons/production_method_icons/picks_and_shovels.dds"
+	unlocking_technologies = { atmospheric_engine }
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_tools_add = 3
+			goods_output_copper_add = 10
+		}
+		level_scaled = {
+			building_employment_laborers_add = 250
+		}
+	}
+}
+
+# -----------------------------
+# Промышленное потребление
+# -----------------------------
+pm_vicmod_no_spice_processing = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_spiced_food_processing = {
+	texture = "gfx/interface/icons/production_method_icons/mechanical_harvesting.dds"
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_spices_add = 5
+			goods_output_groceries_add = 5
+		}
+	}
+}
+
+pm_vicmod_standard_equipment = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_machine_tool_equipment = {
+	texture = "gfx/interface/icons/production_method_icons/assembly_lines.dds"
+	unlocking_technologies = { mechanical_tools }
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_machine_tools_add = 5
+		}
+		unscaled = {
+			building_throughput_add = 0.10
+		}
+	}
+}
+
+pm_vicmod_no_copper_wiring = {
+	texture = "gfx/interface/icons/production_method_icons/no_automation.dds"
+}
+
+pm_vicmod_copper_wiring = {
+	texture = "gfx/interface/icons/production_method_icons/assembly_lines.dds"
+	unlocking_technologies = { electrical_generation }
+	building_modifiers = {
+		workforce_scaled = {
+			goods_input_copper_add = 6
+		}
+		unscaled = {
+			building_throughput_add = 0.05
+		}
+	}
+}
