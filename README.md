@@ -1,86 +1,123 @@
-# Basic Companies, Prestige Goods & New Goods
+# Vic3 MP Mod - Basic Companies, Prestige Goods и новые товары
 
-Мод для **Victoria 3 1.13.x**. Первая рабочая версия по ТЗ: расширение стандартных компаний престижными товарами и добавление четырех новых товаров с собственными экономическими цепочками и стандартными компаниями.
+Мод для **Victoria 3 1.13.x**. Ветка `0.1.0` содержит реализацию двух частей ТЗ:
 
-## Что реализовано
+1. полный аудит ванильных товаров на наличие prestige goods и создание недостающих вариантов через копии ванильных basic companies;
+2. четыре новых товара (`spices`, `horses`, `machine_tools`, `copper`) с производством, спросом и стандартными компаниями.
 
-### A. Недостающие престижные товары для стандартных компаний
+## A. Полный аудит prestige goods
 
-Добавлены generic prestige goods для ванильных товарных цепочек, где у соответствующего товара не было собственного престижного варианта:
+Аудит выполнен по ванильному `00_goods.txt` из ТЗ и ванильному `00_prestige_goods.txt`.
 
-- древесина;
-- каучук;
-- уголь;
-- свинец;
-- боеприпасы;
-- танки;
-- аэропланы;
-- клиперы.
+Всего в `00_goods.txt` найдено **53 товара**. У **40** уже есть хотя бы один prestige good. Без prestige-варианта оставались **13 товаров**:
 
-Они добавлены в уже существующие стандартные компании через `INJECT:`. Благодаря этому мод **не переписывает** их ванильные `building_types`, `extension_building_types`, условия создания и prosperity-бонусы. Компания сохраняет те же права на постройки, а к ней только добавляется новый возможный prestige good.
+- `ammunition`;
+- `tanks`;
+- `aeroplanes`;
+- `manowars`;
+- `wood`;
+- `services`;
+- `transportation`;
+- `electricity`;
+- `clippers`;
+- `coal`;
+- `lead`;
+- `rubber`;
+- `gold`.
 
-Соответствие:
+Из этих 13 **10 являются обычными/нелокальными товарами и реализованы как новые prestige goods**. Три оставшихся (`services`, `transportation`, `electricity`) имеют `local = yes`; prestige goods для local goods не работают в текущей механике Victoria 3, поэтому создавать неработающие определения ради формальной полноты не стали.
 
-| Компания | Добавленные prestige goods |
-|---|---|
-| `company_basic_forestry` | древесина, каучук |
-| `company_basic_mineral_mining` | уголь |
-| `company_basic_metal_mining` | свинец |
-| `company_basic_munitions` | боеприпасы |
-| `company_basic_motors` | танки, аэропланы |
-| `company_basic_shipyards` | клиперы |
+### Копии ванильных базовых компаний
 
-Не добавлялись prestige goods для `services`, `transportation` и `electricity`, поскольку это локальные товары без прямой стандартной товарной компании. Также не затрагивались `gold` и deprecated `manowars`/`ironclads`: для золота отдельная рыночная логика с фиксированной ценой, а deprecated-товары не стоит искусственно возвращать в активную систему.
+Для 10 товаров существует ванильная `company_basic_*`, которая владеет зданием, способным производить соответствующий базовый товар. Для каждого такого товара создана **отдельная копия** исходной компании.
 
-### B. Новые товары
+| Товар | Новая компания | Копия vanilla |
+|---|---|---|
+| `wood` | `company_basic_vicmod_wood` | `company_basic_forestry` |
+| `rubber` | `company_basic_vicmod_rubber` | `company_basic_forestry` |
+| `coal` | `company_basic_vicmod_coal` | `company_basic_mineral_mining` |
+| `lead` | `company_basic_vicmod_lead` | `company_basic_metal_mining` |
+| `gold` | `company_basic_vicmod_gold` | `company_basic_gold_mining` |
+| `clippers` | `company_basic_vicmod_clippers` | `company_basic_shipyards` |
+| `manowars` | `company_basic_vicmod_manowars` | `company_basic_shipyards` |
+| `tanks` | `company_basic_vicmod_tanks` | `company_basic_motors` |
+| `aeroplanes` | `company_basic_vicmod_aeroplanes` | `company_basic_motors` |
+| `ammunition` | `company_basic_vicmod_ammunition` | `company_basic_munitions` |
 
-Добавлены:
+У копий **не менялись**:
 
-1. **Специи (`spices`)**
-   - производятся чайными и кофейными плантациями через отдельную группу методов производства;
-   - потребляются населением как `popneed_luxury_food`;
-   - используются пищевой промышленностью для дополнительного выпуска groceries;
-   - стандартная компания: `company_basic_spices`;
-   - prestige good: `prestige_good_vicmod_generic_spices`.
+- `building_types`;
+- `extension_building_types`;
+- `possible`;
+- `ai_will_do`;
+- `prosperity_modifier`;
+- category, icon, background и набор dynamic naming исходной компании.
 
-2. **Лошади (`horses`)**
-   - производятся животноводческими ранчо через отдельный PMG коневодства;
-   - потребляются населением в `popneed_free_movement`, выступая ранним товаром мобильности;
-   - стандартная компания: `company_basic_horses`;
-   - prestige good: `prestige_good_vicmod_generic_horses`.
+То есть права на постройки и prosperity-бонусы буквально повторяют vanilla. Изменены только `possible_prestige_goods` и `prestige_goods_trigger`, потому что для новых prestige goods не существует ванильных Journal Entry variables.
 
-3. **Станки (`machine_tools`)**
-   - производятся инструментальными мастерскими;
-   - требуют стали и обычных инструментов;
-   - могут использоваться сталелитейными, моторными и электротехническими предприятиями для повышения throughput;
-   - стандартная компания: `company_basic_machine_tools`;
-   - prestige good: `prestige_good_vicmod_generic_machine_tools`.
+### Три локальных товара без vanilla basic company
 
-4. **Медь (`copper`)**
-   - пока реализована как попутная добыча на железных и свинцовых шахтах;
-   - используется моторной и электротехнической промышленностью через PM `Медная проводка`;
-   - стандартная компания: `company_basic_copper`;
-   - prestige good: `prestige_good_vicmod_generic_copper`.
+`services`, `transportation` и `electricity` **не получили prestige-good definitions и компании-копии**.
 
-### Почему медь пока не отдельная шахта
+Причина техническая:
 
-Отдельный `building_copper_mine` требует не только определения здания и PM, но и распределения медных ресурсных лимитов по state regions. Без этого здание существует в файлах, но строить его негде. Чтобы первая версия была автономной и не переписывала историю десятков регионов, медь введена как опциональный попутный продукт железных и свинцовых шахт.
+- `services` производятся Urban Center;
+- `transportation` производятся Railway;
+- `electricity` производится Power Plant;
+- в ванильном `99_basic_companies.txt` нет `company_basic_*`, имеющей права соответственно на Urban Center, Railway или Power Plant;
+- главное: эти три товара имеют `local = yes`, а prestige goods не работают для local goods.
 
-Это сознательно изолировано в `pmg_vicmod_copper_recovery`, поэтому позже переход на полноценные медные месторождения не потребует переделывать сам товар, потребление или компанию.
+Поэтому даже создание новой компании с измененными building rights не решает исходную задачу без более глубокой переделки самих goods. В текущей версии они честно отмечены как исключение движка, а не изображены "реализованными".
 
-## Баланс
+### Deprecated `manowars`
 
-Текущие числа являются стартовыми и специально оставлены умеренными. Prosperity-бонусы новых стандартных компаний повторяют характер близких ванильных компаний и предназначены для последующей ручной балансировки.
+`manowars` помечен в `00_goods.txt` как deprecated, но включен в аудит намеренно. Формулировка ТЗ требует пройти **все товары**, а vanilla уже содержит prestige good для другого deprecated-товара `ironclads`. Поэтому исключать `manowars` только по пометке deprecated было бы произвольным решением.
 
-Основной принцип первой версии: у каждого нового товара есть одновременно источник предложения и источник спроса. Поэтому товар не должен существовать на рынке исключительно ради красивой иконки, что было бы слишком гуманно по отношению к экономическому симулятору.
+## B. Новые товары
 
-## Структура файлов
+### Специи (`spices`)
+
+- производятся чайными и кофейными плантациями;
+- потребляются населением как luxury food;
+- используются Food Industries;
+- компания: `company_basic_spices`;
+- prestige good: `prestige_good_vicmod_generic_spices`.
+
+### Лошади (`horses`)
+
+- производятся Livestock Ranch;
+- входят в `popneed_free_movement`;
+- компания: `company_basic_horses`;
+- prestige good: `prestige_good_vicmod_generic_horses`.
+
+### Станки (`machine_tools`)
+
+- производятся Tooling Workshops;
+- требуют steel и tools;
+- используются Steel, Motor и Electrics Industries;
+- компания: `company_basic_machine_tools`;
+- prestige good: `prestige_good_vicmod_generic_machine_tools`.
+
+### Медь (`copper`)
+
+- реализована как попутный выпуск Iron/Lead Mines;
+- используется Motor и Electrics Industries;
+- компания: `company_basic_copper`;
+- prestige good: `prestige_good_vicmod_generic_copper`.
+
+## Почему медь пока не отдельная шахта
+
+Отдельный `building_copper_mine` требует распределить resource caps по state regions. Без этого здание формально существует, но строить его негде. Поэтому в первой версии медь выделена в отдельный PMG попутного извлечения. Позже это можно заменить полноценными месторождениями без переделки товара и потребителей.
+
+## Структура
 
 ```text
 .metadata/metadata.json
 common/
   buildings/vicmod_building_injections.txt
-  company_types/vicmod_basic_companies.txt
+  company_types/vicmod_prestige_companies_resource.txt
+  company_types/vicmod_prestige_companies_industry.txt
+  company_types/vicmod_new_goods_companies.txt
   goods/vicmod_new_goods.txt
   modifier_type_definitions/vicmod_goods_modifiers.txt
   pop_needs/vicmod_pop_needs.txt
@@ -93,28 +130,16 @@ localization/
 README.md
 ```
 
-## Совместимость
-
-- Целевая версия: Victoria 3 `1.13.*`.
-- Мод использует `INJECT:` для изменений ванильных зданий и компаний вместо полного `REPLACE`, где это возможно.
-- Новые товары имеют уникальные идентификаторы, кроме `copper`, `spices`, `horses` и `machine_tools`, которые намеренно являются непосредственно идентификаторами новых goods.
-- Временные иконки новых товаров используют существующие ванильные DDS. Их можно заменить собственными ассетами без изменения экономики.
-
-## Что проверить в игре
+## Проверка в игре
 
 1. Игра запускается без ошибок парсинга в `error.log`.
-2. В списке товаров отображаются `Spices`, `Horses`, `Machine Tools`, `Copper`.
-3. На чайных/кофейных плантациях доступен PMG выращивания специй.
-4. На животноводческих ранчо доступно коневодство.
-5. В Tooling Workshops доступно производство станков.
-6. На Iron/Lead Mines доступно попутное извлечение меди.
-7. Food Industries создают спрос на специи.
-8. Steel/Motor/Electrics Industries создают спрос на станки.
-9. Motor/Electrics Industries создают спрос на медь.
-10. Население формирует спрос на специи и лошадей.
-11. В интерфейсе компаний доступны четыре новые standard companies.
-12. При максимальном prosperity новые и дополненные компании могут выпускать соответствующие prestige goods.
+2. Все 10 новых copies отображаются в доступных generic companies при выполнении vanilla-условий исходной компании.
+3. Каждая copy сохраняет те же building rights и prosperity bonus, что ее vanilla-источник.
+4. При prosperity соответствующая copy может выпускать свой prestige good.
+5. `manowars` и `gold` не вызывают ошибок системы prestige goods.
+6. `services`, `transportation`, `electricity` не затронуты, поскольку являются local goods и не поддерживают рабочую prestige-good механику.
+7. Новые товары `Spices`, `Horses`, `Machine Tools`, `Copper` присутствуют и имеют устойчивые источники спроса и предложения.
 
 ## Статус
 
-Версия `0.1.0`: функциональный первый проход по исходному ТЗ. После игрового smoke-test логично отдельно балансировать цены, объемы выпуска/потребления, prosperity-бонусы и заменить временные иконки.
+`0.1.0` - исправленный проход по уточненному ТЗ. Баланс новых товаров и окончательное решение по трем локальным товарам требуют игрового smoke-test и, при необходимости, отдельного согласования.
