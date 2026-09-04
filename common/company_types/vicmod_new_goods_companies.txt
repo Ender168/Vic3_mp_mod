@@ -1,0 +1,175 @@
+# ============================================================================
+# B. Стандартные компании для новых товаров.
+# ============================================================================
+
+company_basic_spices = {
+	icon = "gfx/interface/icons/company_icons/basic_colonial_plantations_2.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_plantation.dds"
+	category = aristocrat_owned
+	flavored_company = no
+	uses_dynamic_naming = yes
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_guild"
+	}
+	building_types = {
+		building_tea_plantation
+		building_coffee_plantation
+	}
+	extension_building_types = { building_food_industry }
+	possible_prestige_goods = { prestige_good_vicmod_generic_spices }
+	prestige_goods_trigger = { always = yes }
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_tea_plantation
+					is_building_type = building_coffee_plantation
+				}
+				level >= 5
+			}
+		}
+	}
+	prosperity_modifier = { building_food_industry_throughput_add = 0.1 }
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_tea_plantation
+					is_building_type = building_coffee_plantation
+				}
+				level >= 3
+			}
+		}
+	}
+}
+
+company_basic_horses = {
+	icon = "gfx/interface/icons/company_icons/basic_fabrics.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_light.dds"
+	category = aristocrat_owned
+	flavored_company = no
+	uses_dynamic_naming = yes
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_guild"
+	}
+	building_types = { building_livestock_ranch }
+	extension_building_types = {
+		building_wheat_farm
+		building_rye_farm
+	}
+	possible_prestige_goods = { prestige_good_vicmod_generic_horses }
+	prestige_goods_trigger = { always = yes }
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_livestock_ranch
+				level >= 5
+			}
+		}
+	}
+	prosperity_modifier = { building_livestock_ranch_throughput_add = 0.1 }
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_livestock_ranch
+				level >= 3
+			}
+		}
+	}
+}
+
+company_basic_machine_tools = {
+	icon = "gfx/interface/icons/company_icons/basic_metalworks.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_heavy.dds"
+	flavored_company = no
+	uses_dynamic_naming = yes
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+	}
+	building_types = { building_tooling_workshop }
+	extension_building_types = {
+		building_steel_mill
+		building_motor_industry
+	}
+	possible_prestige_goods = { prestige_good_vicmod_generic_machine_tools }
+	prestige_goods_trigger = { always = yes }
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_tooling_workshop
+				level >= 5
+			}
+		}
+	}
+	prosperity_modifier = { building_group_bg_manufacturing_throughput_add = 0.05 }
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_tooling_workshop
+				level >= 3
+			}
+		}
+	}
+}
+
+company_basic_copper = {
+	icon = "gfx/interface/icons/company_icons/basic_metal_mining.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_mining.dds"
+	flavored_company = no
+	uses_dynamic_naming = yes
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+	}
+	building_types = {
+		building_iron_mine
+		building_lead_mine
+	}
+	extension_building_types = { building_electrics_industry }
+	possible_prestige_goods = { prestige_good_vicmod_generic_copper }
+	prestige_goods_trigger = { always = yes }
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_iron_mine
+					is_building_type = building_lead_mine
+				}
+				level >= 5
+			}
+		}
+	}
+	prosperity_modifier = { building_steel_mill_throughput_add = 0.1 }
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_iron_mine
+					is_building_type = building_lead_mine
+				}
+				level >= 3
+			}
+		}
+	}
+}
