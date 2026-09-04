@@ -1,0 +1,346 @@
+# ============================================================================
+# A. Копии ванильных basic companies для товаров без prestige good.
+#
+# Аудит выполнен по vanilla 00_goods.txt и 00_prestige_goods.txt.
+# Для каждой компании ниже сохранены без изменений:
+# - icon / background / category;
+# - building_types и extension_building_types;
+# - possible и ai_will_do;
+# - prosperity_modifier.
+#
+# Меняется только назначение possible_prestige_goods и его trigger.
+# services / transportation / electricity здесь отсутствуют: в vanilla
+# 99_basic_companies.txt нет basic company, владеющей Urban Center, Railway
+# или Power Plant соответственно. Создавать ложную "копию" с другими правами
+# означало бы нарушить ТЗ.
+# ============================================================================
+
+# Копия company_basic_forestry -> prestige good для wood
+company_basic_vicmod_wood = {
+	icon = "gfx/interface/icons/company_icons/basic_forestry.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_farm_corn.dds"
+
+	category = aristocrat_owned
+
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+		"dynamic_company_type_guild"
+	}
+
+	building_types = {
+		building_logging_camp
+		building_rubber_plantation
+	}
+
+	extension_building_types = {
+		building_tooling_workshop
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_wood
+	}
+
+	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_rubber_plantation
+				}
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		state_infrastructure_from_population_add = 0.7
+		state_infrastructure_from_population_max_add = 15
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_rubber_plantation
+				}
+				level >= 3
+			}
+		}
+	}
+}
+
+# Копия company_basic_forestry -> prestige good для rubber
+company_basic_vicmod_rubber = {
+	icon = "gfx/interface/icons/company_icons/basic_forestry.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_farm_corn.dds"
+
+	category = aristocrat_owned
+
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+		"dynamic_company_type_guild"
+	}
+
+	building_types = {
+		building_logging_camp
+		building_rubber_plantation
+	}
+
+	extension_building_types = {
+		building_tooling_workshop
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_rubber
+	}
+
+	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_rubber_plantation
+				}
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		state_infrastructure_from_population_add = 0.7
+		state_infrastructure_from_population_max_add = 15
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_logging_camp
+					is_building_type = building_rubber_plantation
+				}
+				level >= 3
+			}
+		}
+	}
+}
+
+# Копия company_basic_mineral_mining -> prestige good для coal
+company_basic_vicmod_coal = {
+	icon = "gfx/interface/icons/company_icons/basic_mineral_mining.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_mining.dds"
+
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+		"dynamic_company_type_guild"
+	}
+
+	building_types = {
+		building_sulfur_mine
+		building_coal_mine
+	}
+
+	extension_building_types = {
+		building_iron_mine
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_coal
+	}
+
+	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_sulfur_mine
+					is_building_type = building_coal_mine
+				}
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		building_chemical_plant_throughput_add = 0.1
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_sulfur_mine
+					is_building_type = building_coal_mine
+				}
+				level >= 3
+			}
+		}
+	}
+}
+
+# Копия company_basic_metal_mining -> prestige good для lead
+company_basic_vicmod_lead = {
+	icon = "gfx/interface/icons/company_icons/basic_metal_mining.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_mining.dds"
+
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+		"dynamic_company_type_guild"
+	}
+
+	building_types = {
+		building_iron_mine
+		building_lead_mine
+	}
+
+	extension_building_types = {
+		building_coal_mine
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_lead
+	}
+
+	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_iron_mine
+					is_building_type = building_lead_mine
+				}
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		building_steel_mill_throughput_add = 0.1
+		state_pollution_reduction_health_mult = 0.05
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			any_scope_building = {
+				OR = {
+					is_building_type = building_iron_mine
+					is_building_type = building_lead_mine
+				}
+				level >= 5
+			}
+		}
+	}
+}
+
+# Копия company_basic_gold_mining -> prestige good для gold
+company_basic_vicmod_gold = {
+	icon = "gfx/interface/icons/company_icons/basic_gold_mining.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_mining.dds"
+
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+	}
+
+	building_types = {
+		building_gold_mine
+	}
+
+	extension_building_types = {
+		building_lead_mine
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_gold
+	}
+
+	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_gold_mine
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		country_minting_mult = 0.05
+		state_loyalists_from_political_movements_mult = 0.05
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			any_scope_building = {
+				is_building_type = building_gold_mine
+				level >= 3
+			}
+		}
+	}
+}
