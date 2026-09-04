@@ -1,133 +1,11 @@
-# ============================================================================
-# A2. Копии vanilla basic companies: промышленность и судостроение.
-# Права на здания, условия и prosperity bonuses сохранены из vanilla.
-# ============================================================================
+# Generic prestige companies: промышленность.
+# Merchant Marine использует Ports; vanilla company_basic_* для Ports отсутствует,
+# поэтому профиль собран по существующим vanilla merchant-marine companies.
 
-# Копия company_basic_shipyards -> prestige good для clippers
-company_basic_vicmod_clippers = {
-	icon = "gfx/interface/icons/company_icons/basic_shipyards.dds"
-	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_harbor_shipbuilding.dds"
-
-	flavored_company = no
-
-	uses_dynamic_naming = yes
-
-	dynamic_company_type_names = {
-		"dynamic_company_type_company"
-		"dynamic_company_type_consortium"
-		"dynamic_company_type_corporation"
-		"dynamic_company_type_conglomerate"
-		"dynamic_company_type_syndicate"
-		"dynamic_company_type_combine"
-	}
-
-	building_types = {
-		building_shipyard
-	}
-
-	extension_building_types = {
-		building_logging_camp
-	}
-
-	possible_prestige_goods = {
-		prestige_good_vicmod_generic_clippers
-	}
-
-	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
-	prestige_goods_trigger = {
-		always = yes
-	}
-
-	possible = {
-		any_scope_state = {
-			is_incorporated = yes
-			any_scope_building = {
-				is_building_type = building_shipyard
-				level >= 5
-			}
-		}
-	}
-
-	prosperity_modifier = {
-		ship_hull_damage_mult = 0.05
-	}
-
-	ai_will_do = {
-		any_scope_state = {
-			is_incorporated = yes
-			any_scope_building = {
-				is_building_type = building_shipyard
-				level >= 5
-			}
-		}
-	}
-}
-
-# Копия company_basic_shipyards -> prestige good для manowars
-company_basic_vicmod_manowars = {
-	icon = "gfx/interface/icons/company_icons/basic_shipyards.dds"
-	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_harbor_shipbuilding.dds"
-
-	flavored_company = no
-
-	uses_dynamic_naming = yes
-
-	dynamic_company_type_names = {
-		"dynamic_company_type_company"
-		"dynamic_company_type_consortium"
-		"dynamic_company_type_corporation"
-		"dynamic_company_type_conglomerate"
-		"dynamic_company_type_syndicate"
-		"dynamic_company_type_combine"
-	}
-
-	building_types = {
-		building_shipyard
-	}
-
-	extension_building_types = {
-		building_logging_camp
-	}
-
-	possible_prestige_goods = {
-		prestige_good_vicmod_generic_manowars
-	}
-
-	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
-	prestige_goods_trigger = {
-		always = yes
-	}
-
-	possible = {
-		any_scope_state = {
-			is_incorporated = yes
-			any_scope_building = {
-				is_building_type = building_shipyard
-				level >= 5
-			}
-		}
-	}
-
-	prosperity_modifier = {
-		ship_hull_damage_mult = 0.05
-	}
-
-	ai_will_do = {
-		any_scope_state = {
-			is_incorporated = yes
-			any_scope_building = {
-				is_building_type = building_shipyard
-				level >= 5
-			}
-		}
-	}
-}
-
-# Копия company_basic_motors -> prestige good для tanks
+# tanks: основа company_basic_motors
 company_basic_vicmod_tanks = {
 	icon = "gfx/interface/icons/company_icons/basic_motors.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_heavy.dds"
-
 	flavored_company = no
 
 	uses_dynamic_naming = yes
@@ -154,7 +32,6 @@ company_basic_vicmod_tanks = {
 		prestige_good_vicmod_generic_tanks
 	}
 
-	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
 	prestige_goods_trigger = {
 		always = yes
 	}
@@ -191,11 +68,10 @@ company_basic_vicmod_tanks = {
 	}
 }
 
-# Копия company_basic_motors -> prestige good для aeroplanes
+# aeroplanes: основа company_basic_motors
 company_basic_vicmod_aeroplanes = {
 	icon = "gfx/interface/icons/company_icons/basic_motors.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_heavy.dds"
-
 	flavored_company = no
 
 	uses_dynamic_naming = yes
@@ -222,7 +98,6 @@ company_basic_vicmod_aeroplanes = {
 		prestige_good_vicmod_generic_aeroplanes
 	}
 
-	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
 	prestige_goods_trigger = {
 		always = yes
 	}
@@ -259,11 +134,10 @@ company_basic_vicmod_aeroplanes = {
 	}
 }
 
-# Копия company_basic_munitions -> prestige good для ammunition
+# ammunition: основа company_basic_munitions
 company_basic_vicmod_ammunition = {
 	icon = "gfx/interface/icons/company_icons/basic_munitions.dds"
 	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_heavy.dds"
-
 	flavored_company = no
 
 	uses_dynamic_naming = yes
@@ -291,7 +165,6 @@ company_basic_vicmod_ammunition = {
 		prestige_good_vicmod_generic_ammunition
 	}
 
-	# У новых prestige goods нет ванильного JE-variable, поэтому доступ открыт сразу.
 	prestige_goods_trigger = {
 		always = yes
 	}
@@ -321,6 +194,133 @@ company_basic_vicmod_ammunition = {
 					is_building_type = building_munition_plant
 					is_building_type = building_explosives_factory
 				}
+				level >= 5
+			}
+		}
+	}
+}
+
+# engines: основа company_basic_motors
+company_basic_vicmod_engines = {
+	icon = "gfx/interface/icons/company_icons/basic_motors.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_manufacturing_heavy.dds"
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+	}
+
+	building_types = {
+		building_motor_industry
+		building_automotive_industry
+	}
+
+	extension_building_types = {
+		building_steel_mill
+	}
+
+	possible_prestige_goods = {
+		prestige_good_vicmod_generic_engines
+	}
+
+	prestige_goods_trigger = {
+		always = yes
+	}
+
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_motor_industry
+					is_building_type = building_automotive_industry
+				}
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		military_formation_army_movement_speed_mult = 0.1
+		military_formation_fleet_movement_speed_mult = 0.1
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				OR = {
+					is_building_type = building_motor_industry
+					is_building_type = building_automotive_industry
+				}
+				level >= 5
+			}
+		}
+	}
+}
+
+# merchant_marine: основа vanilla merchant-marine port companies
+company_basic_vicmod_merchant_marine = {
+	icon = "gfx/interface/icons/company_icons/basic_shipyards.dds"
+	background = "gfx/interface/icons/company_icons/company_backgrounds/comp_illu_harbor_shipbuilding.dds"
+	flavored_company = no
+
+	uses_dynamic_naming = yes
+
+	dynamic_company_type_names = {
+		"dynamic_company_type_company"
+		"dynamic_company_type_consortium"
+		"dynamic_company_type_corporation"
+		"dynamic_company_type_conglomerate"
+		"dynamic_company_type_syndicate"
+		"dynamic_company_type_combine"
+	}
+
+	building_types = {
+		building_port
+	}
+
+	extension_building_types = {
+		building_shipyard
+	}
+
+	possible_prestige_goods = {
+		prestige_good_generic_merchant_marine
+	}
+
+	prestige_goods_trigger = {
+		custom_tooltip = {
+			text = je_prestige_goods_merchant_marine_complete_tt
+			has_variable = prestige_good_generic_merchant_marine_var
+		}
+	}
+
+	possible = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_port
+				level >= 5
+			}
+		}
+	}
+
+	prosperity_modifier = {
+		country_ship_group_supply_ships_construction_efficiency_add = 0.2
+	}
+
+	ai_will_do = {
+		any_scope_state = {
+			is_incorporated = yes
+			any_scope_building = {
+				is_building_type = building_port
 				level >= 5
 			}
 		}
