@@ -1,45 +1,66 @@
-# Недостающие generic prestige goods для ванильных товарных цепочек.
-# Локальные товары, золото и deprecated-товары намеренно не включены.
+# Полный аудит vanilla goods без prestige good.
+# Источник списка товаров: 00_goods.txt из ТЗ.
+# services / transportation / electricity не определяются: это local goods,
+# для которых prestige goods не работают в текущей механике игры.
 
 prestige_good_vicmod_generic_wood = {
 	base_good = wood
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/wood.dds"
 }
+
 prestige_good_vicmod_generic_rubber = {
 	base_good = rubber
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/rubber.dds"
 }
+
 prestige_good_vicmod_generic_coal = {
 	base_good = coal
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/coal.dds"
 }
+
 prestige_good_vicmod_generic_lead = {
 	base_good = lead
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/lead.dds"
 }
+
 prestige_good_vicmod_generic_ammunition = {
 	base_good = ammunition
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/ammunition.dds"
 }
+
 prestige_good_vicmod_generic_tanks = {
 	base_good = tanks
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/tanks.dds"
 }
+
 prestige_good_vicmod_generic_aeroplanes = {
 	base_good = aeroplanes
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/aeroplanes.dds"
 }
+
 prestige_good_vicmod_generic_clippers = {
 	base_good = clippers
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/clippers.dds"
+}
+
+prestige_good_vicmod_generic_manowars = {
+	base_good = manowars
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/man_o_wars.dds"
+}
+
+prestige_good_vicmod_generic_gold = {
+	base_good = gold
+	prestige_bonus = 0.1
+	texture = "gfx/interface/icons/goods_icons/gold.dds"
 }
 
 # Prestige-варианты новых товаров из пункта B.
@@ -48,16 +69,19 @@ prestige_good_vicmod_generic_spices = {
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/tea.dds"
 }
+
 prestige_good_vicmod_generic_horses = {
 	base_good = horses
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/meat.dds"
 }
+
 prestige_good_vicmod_generic_machine_tools = {
 	base_good = machine_tools
 	prestige_bonus = 0.1
 	texture = "gfx/interface/icons/goods_icons/tools.dds"
 }
+
 prestige_good_vicmod_generic_copper = {
 	base_good = copper
 	prestige_bonus = 0.1
