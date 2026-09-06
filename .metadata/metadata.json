@@ -1,0 +1,15 @@
+{
+  "name" : "SokotoMap",
+  "id" : "",
+  "version" : "",
+  "supported_game_version" : "",
+  "short_description" : "",
+  "tags" : [],
+  "relationships" : [],
+  "replace_paths": [
+    "common/history/diplomacy"
+  ],
+  "game_custom_data" : {
+    "multiplayer_synchronized" : true
+  }
+}

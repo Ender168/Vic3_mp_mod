@@ -1,0 +1,21 @@
+﻿COUNTRIES = {
+	c:SIH ?= {
+		effect_starting_technology_tier_4_tech = yes
+		add_technology_researched = cotton_gin
+		add_technology_researched = mass_communication
+		add_technology_researched = intensive_agriculture
+
+		# Laws
+		activate_law = law_type:law_presidential_republic
+		activate_law = law_type:law_landed_voting
+		activate_law = law_type:law_racial_segregation
+		activate_law = law_type:law_freedom_of_conscience
+		activate_law = law_type:law_appointed_bureaucrats
+		activate_law = law_type:law_national_guard
+		activate_law = law_type:law_agrarianism
+		activate_law = law_type:law_tenant_farmers
+		activate_law = law_type:law_local_police
+		activate_law = law_type:law_right_of_assembly
+		activate_law = law_type:law_land_based_taxation
+	}
+}
