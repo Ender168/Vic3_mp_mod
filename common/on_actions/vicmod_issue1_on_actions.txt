@@ -1,0 +1,80 @@
+﻿# Vic3 MP Mod 0.2.0
+# Issue #1: для POL удалить текущую обрабатывающую промышленность
+# в целевых регионах и создать заданный набор 2-4 уровней.
+INJECT:on_game_started = {
+	effect = {
+		c:POL ?= {
+			every_scope_state = {
+				limit = { OR = {
+					state_region = s:STATE_MAZOVIA
+					state_region = s:STATE_GREATER_POLAND
+					state_region = s:STATE_LESSER_POLAND
+					state_region = s:STATE_WEST_GALICIA
+					state_region = s:STATE_POSEN
+					state_region = s:STATE_WEST_PRUSSIA
+					state_region = s:STATE_UPPER_SILESIA
+					state_region = s:STATE_EAST_PRUSSIA
+				} }
+				if = { limit = { has_building = building_food_industry } remove_building = building_food_industry }
+				if = { limit = { has_building = building_textile_mill } remove_building = building_textile_mill }
+				if = { limit = { has_building = building_furniture_manufactory } remove_building = building_furniture_manufactory }
+				if = { limit = { has_building = building_glassworks } remove_building = building_glassworks }
+				if = { limit = { has_building = building_tooling_workshop } remove_building = building_tooling_workshop }
+				if = { limit = { has_building = building_paper_mill } remove_building = building_paper_mill }
+				if = { limit = { has_building = building_chemical_plant } remove_building = building_chemical_plant }
+				if = { limit = { has_building = building_synthetics_plant } remove_building = building_synthetics_plant }
+				if = { limit = { has_building = building_steel_mill } remove_building = building_steel_mill }
+				if = { limit = { has_building = building_motor_industry } remove_building = building_motor_industry }
+				if = { limit = { has_building = building_automotive_industry } remove_building = building_automotive_industry }
+				if = { limit = { has_building = building_electrics_industry } remove_building = building_electrics_industry }
+				if = { limit = { has_building = building_arms_industry } remove_building = building_arms_industry }
+				if = { limit = { has_building = building_artillery_foundry } remove_building = building_artillery_foundry }
+				if = { limit = { has_building = building_munition_plant } remove_building = building_munition_plant }
+				if = { limit = { has_building = building_explosives_factory } remove_building = building_explosives_factory }
+				if = { limit = { has_building = building_shipyard } remove_building = building_shipyard }
+
+				if = { limit = { state_region = s:STATE_MAZOVIA }
+					create_building = { building = building_food_industry level = 4 }
+					create_building = { building = building_textile_mill level = 3 }
+					create_building = { building = building_tooling_workshop level = 3 }
+				}
+				if = { limit = { state_region = s:STATE_GREATER_POLAND }
+					create_building = { building = building_food_industry level = 3 }
+					create_building = { building = building_furniture_manufactory level = 3 }
+					create_building = { building = building_textile_mill level = 2 }
+				}
+				if = { limit = { state_region = s:STATE_LESSER_POLAND }
+					create_building = { building = building_glassworks level = 3 }
+					create_building = { building = building_paper_mill level = 2 }
+					create_building = { building = building_food_industry level = 3 }
+				}
+				if = { limit = { state_region = s:STATE_WEST_GALICIA }
+					create_building = { building = building_textile_mill level = 3 }
+					create_building = { building = building_food_industry level = 3 }
+					create_building = { building = building_glassworks level = 2 }
+				}
+				if = { limit = { state_region = s:STATE_POSEN }
+					create_building = { building = building_tooling_workshop level = 3 }
+					create_building = { building = building_furniture_manufactory level = 2 }
+					create_building = { building = building_paper_mill level = 2 }
+				}
+				if = { limit = { state_region = s:STATE_WEST_PRUSSIA }
+					create_building = { building = building_food_industry level = 3 }
+					create_building = { building = building_textile_mill level = 2 }
+					create_building = { building = building_paper_mill level = 2 }
+				}
+				if = { limit = { state_region = s:STATE_UPPER_SILESIA }
+					create_building = { building = building_steel_mill level = 4 }
+					create_building = { building = building_tooling_workshop level = 4 }
+					create_building = { building = building_glassworks level = 3 }
+				}
+				if = { limit = { state_region = s:STATE_EAST_PRUSSIA }
+					create_building = { building = building_food_industry level = 2 }
+					create_building = { building = building_textile_mill level = 2 }
+					create_building = { building = building_furniture_manufactory level = 2 }
+					create_building = { building = building_shipyard level = 2 }
+				}
+			}
+		}
+	}
+}
