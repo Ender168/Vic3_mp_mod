@@ -1,0 +1,26 @@
+﻿# Vic3 MP Mod 0.2.0
+# Польская армия по issue #1.
+MILITARY_FORMATIONS = {
+	c:POL ?= {
+		create_military_formation = {
+			type = army
+			hq_region = sr:region_eastern_europe
+			name = vicmod_pol_eastern_army
+			combat_unit = {
+				type = unit_type:combat_unit_type_line_infantry
+				state_region = s:STATE_MAZOVIA
+				count = 25
+			}
+			combat_unit = {
+				type = unit_type:combat_unit_type_mobile_artillery
+				state_region = s:STATE_MAZOVIA
+				count = 10
+			}
+			combat_unit = {
+				type = unit_type:combat_unit_type_lancers
+				state_region = s:STATE_MAZOVIA
+				count = 7
+			}
+		}
+	}
+}
