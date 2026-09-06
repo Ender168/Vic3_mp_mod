@@ -1,160 +1,141 @@
-# Basic Companies, Prestige Goods & New Goods
+# Vic3 MP Mod
 
-Мод для **Victoria 3 1.13.x**. Версия `0.1.0` расширяет систему стандартных компаний: для товарных цепочек, которым не хватает generic prestige-варианта через стандартную компанию, создается отдельная копия подходящей ванильной компании. Права на здания и prosperity-бонусы исходной компании сохраняются.
+Версия **0.2.0** для Victoria 3 `1.13.*`.
 
-## A. Generic prestige goods через стандартные компании
+`0.2.0` основана на `0.1.0`: весь ранее добавленный блок standard companies, prestige goods и новых товаров сохранен. Главная новая часть версии - стартовый сетап зданий для `UKR`, `BYE` и `POL` по issue #1, а также отдельная польская армия.
 
-Основной принцип:
+## Что изменилось в 0.2.0
 
-1. Для товара создается отдельная компания `company_basic_vicmod_*`.
-2. За основу берется существующая ванильная `company_basic_*`, связанная с производством этого товара.
-3. `building_types`, `extension_building_types`, `possible`, `ai_will_do` и `prosperity_modifier` повторяют исходную компанию.
-4. Копия получает свой generic prestige good.
-5. Существующие исторические prestige goods ванили не заменяются и продолжают работать параллельно.
+### Общие правила реализации
 
-### Ресурсы
+- Для `UKR` и `BYE` существующие стартовые здания **не удаляются**. Требуемые уровни добавляются поверх существующей истории, как прямо указано в issue.
+- Для `POL` сельское хозяйство и здания развития добавляются, а текущая **обрабатывающая промышленность** в целевых польских регионах удаляется на старте и заменяется заданным набором.
+- Под формулировкой «2 метод производства» используется второй нормальный/доступный вариант основного PMG, а не скрытый региональный вариант. Для Wheat Farms используется `pm_soil_enriching_farming`, потому что формально второй элемент текущего vanilla-списка `pm_herring_meal_farming` доступен только в Японии.
+- «Литва» из блока `BYE` сопоставлена с `STATE_KAUNAS`, так как именно этот state локализован в vanilla как `Lithuania`.
+- «Вармия» из блока `POL` сопоставлена с `STATE_EAST_PRUSSIA`, который при польском динамическом названии отображается как `Warmia`.
+- `STATE_BESSARABIA` включена в общий сельскохозяйственный пакет `UKR`, потому что issue отдельно относит Бессарабию к этому тегу.
 
-| Товар | Компания мода | Ванильная основа |
-|---|---|---|
-| Wood | `company_basic_vicmod_wood` | `company_basic_forestry` |
-| Hardwood | `company_basic_vicmod_hardwood` | `company_basic_forestry` |
-| Rubber | `company_basic_vicmod_rubber` | `company_basic_forestry` |
-| Coal | `company_basic_vicmod_coal` | `company_basic_mineral_mining` |
-| Sulfur | `company_basic_vicmod_sulfur` | `company_basic_mineral_mining` |
-| Lead | `company_basic_vicmod_lead` | `company_basic_metal_mining` |
-| Iron | `company_basic_vicmod_iron` | `company_basic_metal_mining` |
-| Gold | `company_basic_vicmod_gold` | `company_basic_gold_mining` |
-| Oil | `company_basic_vicmod_oil` | `company_basic_oil` |
+## UKR
 
-### Промышленность и военные товары
+Для общего сельскохозяйственного блока диапазоны из issue (`25-45` Wheat Farms и `20-40` Livestock Ranches) зафиксированы внутри заданных границ:
 
-| Товар | Компания мода | Ванильная основа |
-|---|---|---|
-| Tanks | `company_basic_vicmod_tanks` | `company_basic_motors` |
-| Aeroplanes | `company_basic_vicmod_aeroplanes` | `company_basic_motors` |
-| Ammunition | `company_basic_vicmod_ammunition` | `company_basic_munitions` |
-| Engines | `company_basic_vicmod_engines` | `company_basic_motors` |
-| Merchant Marine | `company_basic_vicmod_merchant_marine` | см. исключение ниже |
+| Регион | Wheat Farms | Livestock Ranches | Vineyards | Fishing Wharves |
+|---|---:|---:|---:|---:|
+| Kyiv | 45 | 40 | 10 | 15 |
+| East Galicia | 45 | 35 | 10 | 15 |
+| Taurida | 40 | 30 | 10 | 15 |
+| Cherson | 40 | 30 | 10 | 15 |
+| Kharkov | 35 | 30 | 10 | 15 |
+| Volhynia | 35 | 25 | 10 | 15 |
+| Crimea | 25 | 20 | 10 | 15 |
+| Chernihiv | 30 | 25 | - | 15 |
+| Bessarabia | 30 | 25 | 10 | 15 |
 
-### Сырье и потребительские товары
+Виноградники добавляются только там, где vanilla state resources разрешают `building_vineyard`. В Chernihiv виноградник не добавлен.
 
-| Товар | Компания мода | Ванильная основа |
-|---|---|---|
-| Fabric | `company_basic_vicmod_fabric` | `company_basic_fabrics` |
-| Fruit | `company_basic_vicmod_fruit` | `company_basic_wine_and_fruit` |
-| Wine | `company_basic_vicmod_wine` | `company_basic_wine_and_fruit` |
-| Dye | `company_basic_vicmod_dye` | `company_basic_silk_and_dye` |
-| Silk | `company_basic_vicmod_silk` | `company_basic_silk_and_dye` |
-| Tea | `company_basic_vicmod_tea` | `company_basic_colonial_plantations_1` |
-| Tobacco | `company_basic_vicmod_tobacco` | `company_basic_colonial_plantations_2` |
-| Sugar | `company_basic_vicmod_sugar` | `company_basic_colonial_plantations_2` |
-| Liquor | `company_basic_vicmod_liquor` | `company_basic_food` |
-| Luxury Furniture | `company_basic_vicmod_luxury_furniture` | `company_basic_home_goods` |
-| Luxury Clothes | `company_basic_vicmod_luxury_clothes` | `company_basic_textiles` |
-| Porcelain | `company_basic_vicmod_porcelain` | `company_basic_home_goods` |
-| Fine Art | `company_basic_vicmod_fine_art` | см. исключение ниже |
+Дополнительно:
 
-### Исключения
+- **Kyiv**: Coal Mine 5, Logging Camp 10, Iron Mine 3, Paper Mill 2, Furniture Manufactory 1, Tooling Workshop 2, Glassworks 1 + Ceramics, Trade Center 6, University 2, Construction Sector 3.
+- **Kharkov**: Logging Camp 5, Iron Mine 1, Construction Sector 1.
+- **Chernihiv**: Logging Camp 3.
+- **Bessarabia**: Textile Mill 1.
+- **Crimea**: Trade Center 6.
 
-#### Merchant Marine
+## BYE
 
-Ванильный `prestige_good_generic_merchant_marine` уже существует, поэтому мод **не создает его дубль**. Добавляется только generic standard company, которая использует существующий prestige good и ванильный unlock trigger.
+Для столицы Minsk:
 
-В `99_basic_companies.txt` нет стандартной `company_basic_*`, владеющей Ports. Поэтому профиль сделан по существующим ванильным компаниям Merchant Marine: основной тип здания `building_port`, расширение `building_shipyard`, а prosperity-бонус остается отраслевым.
+- Rye Farms 20, второй основной PM;
+- Livestock Ranches 15, второй основной PM;
+- Iron Mine 2;
+- Logging Camp 7;
+- Glassworks 3 + Ceramics;
+- Tooling Workshop 1;
+- University 5;
+- Art Academy 5;
+- Construction Sector 1.
 
-#### Fine Art
+Для остальных поддержанных регионов BYE:
 
-В `99_basic_companies.txt` нет стандартной компании для `building_art_academy`. Поэтому `company_basic_vicmod_fine_art` основана на ванильной `company_ricordi`, но региональная привязка к Ломбардии убрана, чтобы компания была generic. Профиль зданий и prosperity-бонусы сохранены:
+- Mogilev: Rye Farms 10, Livestock Ranches 5, Food Industry 1;
+- Brest: Rye Farms 10, Livestock Ranches 5;
+- Vilnius: Rye Farms 10, Livestock Ranches 5;
+- Kaunas / Lithuania: Rye Farms 10, Livestock Ranches 5, Shipyard 1, Trade Center 9.
 
-- `building_art_academy`;
-- extension `building_vineyard`;
-- `country_prestige_mult = 0.15`;
-- `state_loyalists_from_political_movements_mult = 0.05`.
+## POL
 
-### Удалено по уточнению ТЗ
+Сельское хозяйство повторяет схему BYE:
 
-Из блока generic prestige companies полностью убраны:
+- Warsaw / Mazovia: Rye Farms 20, Livestock Ranches 15;
+- остальные польские регионы и Warmia: Rye Farms 10, Livestock Ranches 5.
 
-- `manowars`;
-- `clippers`.
+В столице (`STATE_MAZOVIA`) добавлены University 2, Trade Center 5, Government Administration 4.
 
-Мод не добавляет для них ни prestige goods, ни отдельные standard companies.
+В Warmia (`STATE_EAST_PRUSSIA`) добавлены Trade Center 7 и Shipyard 2.
 
-## B. Новые товары
+### Обрабатывающая промышленность POL
 
-Исходный блок новых товаров сохранен.
+На `on_game_started` существующие manufacturing buildings в целевых польских регионах удаляются, после чего создается новый набор. В каждом регионе есть минимум три разных типа по 2-4 уровня:
 
-### Spices
+| Регион | Новый набор |
+|---|---|
+| Mazovia | Food Industry 4, Textile Mill 3, Tooling Workshop 3 |
+| Greater Poland | Food Industry 3, Furniture 3, Textile Mill 2 |
+| Lesser Poland | Glassworks 3, Paper Mill 2, Food Industry 3 |
+| West Galicia | Textile Mill 3, Food Industry 3, Glassworks 2 |
+| Posen | Tooling Workshop 3, Furniture 2, Paper Mill 2 |
+| West Prussia | Food Industry 3, Textile Mill 2, Paper Mill 2 |
+| Upper Silesia | Steel Mill 4, Tooling Workshop 4, Glassworks 3 |
+| Warmia / East Prussia | Food Industry 2, Textile Mill 2, Furniture 2, Shipyard 2 |
 
-- производятся чайными и кофейными плантациями;
-- потребляются населением как luxury food;
-- используются Food Industries;
-- standard company: `company_basic_spices`;
-- prestige good: `prestige_good_vicmod_generic_spices`.
+## Польская армия
 
-### Horses
+Для `POL` добавлена отдельная армия:
 
-- производятся Livestock Ranches;
-- используются населением в `popneed_free_movement`;
-- standard company: `company_basic_horses`;
-- prestige good: `prestige_good_vicmod_generic_horses`.
+- 25 Line Infantry;
+- 10 Mobile Artillery;
+- 7 Lancers;
+- все части привязаны к `STATE_MAZOVIA` (Warsaw);
+- HQ: `sr:region_eastern_europe`.
 
-### Machine Tools
-
-- производятся Tooling Workshops;
-- требуют Steel и обычных Tools;
-- используются Steel, Motor и Electrics Industries;
-- standard company: `company_basic_machine_tools`;
-- prestige good: `prestige_good_vicmod_generic_machine_tools`.
-
-### Copper
-
-- пока производится как попутный продукт Iron и Lead Mines;
-- используется Motor и Electrics Industries;
-- standard company: `company_basic_copper`;
-- prestige good: `prestige_good_vicmod_generic_copper`.
-
-## Структура файлов
+## Новые файлы 0.2.0
 
 ```text
-.metadata/metadata.json
-common/
-  buildings/vicmod_building_injections.txt
-  company_types/
-    vicmod_new_goods_companies.txt
-    vicmod_prestige_companies_resource.txt
-    vicmod_prestige_companies_industry.txt
-    vicmod_prestige_companies_consumer.txt
-  goods/vicmod_new_goods.txt
-  modifier_type_definitions/vicmod_goods_modifiers.txt
-  pop_needs/vicmod_pop_needs.txt
-  prestige_goods/vicmod_generic_prestige_goods.txt
-  production_method_groups/vicmod_new_pmg.txt
-  production_methods/vicmod_new_pm.txt
-localization/
-  english/vicmod_l_english.yml
-  russian/vicmod_l_russian.yml
-README.md
+common/history/buildings/vicmod_issue1_ukr_buildings_1.txt
+common/history/buildings/vicmod_issue1_ukr_buildings_2.txt
+common/history/buildings/vicmod_issue1_bye_buildings.txt
+common/history/buildings/vicmod_issue1_pol_buildings.txt
+common/history/military_formations/vicmod_issue1_pol_army.txt
+common/on_actions/vicmod_issue1_on_actions.txt
+localization/russian/vicmod_issue1_l_russian.yml
+localization/english/vicmod_issue1_l_english.yml
 ```
 
-## Совместимость и ограничения
+## Сохранено из 0.1.0
 
-- Целевая версия: Victoria 3 `1.13.*`.
-- `services`, `transportation` и `electricity` остаются вне этой системы. Это local goods, для которых обычная схема prestige goods не работает корректно.
-- Новые generic prestige goods используют временно существующие ванильные DDS соответствующих товаров. Иконки можно заменить позже без изменения экономики.
-- Баланс новых товаров из блока B остается стартовым и требует игрового теста.
+Версия по-прежнему содержит:
 
-## Что проверить в игре
+- generic prestige-company copies для расширенного списка vanilla goods;
+- prestige goods, включая hardwood, iron, liquor, fabric, fruit, luxury furniture, luxury clothes, dyes, tobacco, silk, sugar, tea, sulfur, engines, porcelain, oil, wine и fine art;
+- отсутствие mod-added вариантов `manowars` и `clippers`;
+- новые товары `spices`, `horses`, `machine_tools`, `copper` с производством, спросом и standard companies.
 
-1. Игра запускается без ошибок парсинга в `error.log`.
-2. Все `company_basic_vicmod_*` отображаются среди доступных типов компаний при выполнении условий.
-3. Копии сохраняют те же права на здания, что их ванильные основы.
-4. Prosperity-бонусы копий совпадают с исходными компаниями.
-5. При доступности prestige goods компания может перейти на соответствующий generic prestige good.
-6. `company_basic_vicmod_merchant_marine` использует ванильный `prestige_good_generic_merchant_marine`.
-7. `manowars` и `clippers` отсутствуют среди добавленных модом prestige goods и компаний.
-8. Spices, Horses, Machine Tools и Copper продолжают производиться и создавать спрос по своим цепочкам.
+## Проверка в игре
+
+Перед слиянием `0.2.0` в основную ветку нужно проверить:
+
+1. отсутствие parser errors в `error.log`;
+2. стартовые уровни UKR и BYE без удаления существующих зданий;
+3. корректный cleanup manufacturing buildings POL и создание новых 2-4 level наборов;
+4. отображение Kaunas как целевого региона блока «Литва» и East Prussia как Warmia при польской локализации;
+5. production methods для ферм, шахт, лесопилок, стекольных и строительных зданий;
+6. появление польской армии 25/10/7 в Eastern Europe;
+7. отсутствие регрессий функциональности `0.1.0`.
+
+### Примечание по Fishing Wharves
+
+Issue требует по 15 Fishing Wharves в подходящих регионах UKR. В нескольких vanilla state regions исходный `capped_resources` для рыболовства ниже 15. В history-файле сохранено требуемое значение 15, поэтому этот пункт особенно важно проверить непосредственно в игре. Если движок ограничит стартовый уровень cap-ом, потребуется отдельно поднять соответствующие resource caps.
 
 ## Статус
 
-`0.1.0`: второй проход по ТЗ с расширенным покрытием generic prestige goods и переходом от `INJECT` к отдельным копиям компаний.
+`0.2.0`: реализация запросов из issue #1, подготовлена для игрового smoke-test.
