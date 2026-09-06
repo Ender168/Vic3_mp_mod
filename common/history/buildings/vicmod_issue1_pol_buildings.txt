@@ -1,0 +1,41 @@
+﻿# Vic3 MP Mod 0.2.0
+BUILDINGS={
+	s:STATE_MAZOVIA={
+		region_state:POL={
+			create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=20 region="STATE_MAZOVIA" } } reserves=1 activate_production_methods={ "pm_soil_enriching_farming" "pm_no_secondary" "pm_tools_disabled" } }
+			create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=15 region="STATE_MAZOVIA" } } reserves=1 activate_production_methods={ "pm_butchering_tools" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+			create_building={ building="building_university" add_ownership={ country={ country="c:POL" levels=2 } } reserves=1 activate_production_methods={ "pm_scholastic_education" "pm_secular_academia" } }
+			create_building={ building="building_trade_center" add_ownership={ building={ type="building_financial_district" country="c:POL" levels=5 region="STATE_MAZOVIA" } } reserves=1 activate_production_methods={ "pm_trade_center_trade_quantity_normal" } }
+			create_building={ building="building_government_administration" add_ownership={ country={ country="c:POL" levels=4 } } reserves=1 activate_production_methods={ "pm_simple_organization" "pm_hereditary_bureaucrats" "pm_religious_bureaucrats" } }
+		}
+	}
+	s:STATE_GREATER_POLAND={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_GREATER_POLAND" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_GREATER_POLAND" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_LESSER_POLAND={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_LESSER_POLAND" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_LESSER_POLAND" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_WEST_GALICIA={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_WEST_GALICIA" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_WEST_GALICIA" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_POSEN={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_POSEN" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_POSEN" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_WEST_PRUSSIA={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_WEST_PRUSSIA" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_WEST_PRUSSIA" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_UPPER_SILESIA={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_UPPER_SILESIA" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_UPPER_SILESIA" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+	} }
+	s:STATE_EAST_PRUSSIA={ region_state:POL={
+		create_building={ building="building_rye_farm" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=10 region="STATE_EAST_PRUSSIA" } } reserves=1 activate_production_methods={ "pm_simple_farming" "pm_no_secondary" "pm_tools_disabled" } }
+		create_building={ building="building_livestock_ranch" add_ownership={ building={ type="building_manor_house" country="c:POL" levels=5 region="STATE_EAST_PRUSSIA" } } reserves=1 activate_production_methods={ "pm_open_air_stockyards" "pm_simple_ranch" "pm_standard_fences" "pm_unrefrigerated" } }
+		create_building={ building="building_trade_center" add_ownership={ building={ type="building_financial_district" country="c:POL" levels=7 region="STATE_EAST_PRUSSIA" } } reserves=1 activate_production_methods={ "pm_trade_center_trade_quantity_normal" } }
+	} }
+}
