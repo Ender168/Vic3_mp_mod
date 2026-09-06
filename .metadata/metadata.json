@@ -1,9 +1,9 @@
 {
-  "name": "Basic Companies, Prestige Goods & New Goods",
+  "name": "Basic Companies, Prestige Goods & Regional Setup",
   "id": "vicmod.basic_companies_goods",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "supported_game_version": "1.13.*",
-  "short_description": "Базовые компании, недостающие престижные товары и новые товары: специи, лошади, станки и медь.",
+  "short_description": "Престижные товары, новые товары и стартовый региональный сетап UKR/BYE/POL по issue #1.",
   "tags": [
     "Economy And Buildings",
     "Gameplay",
