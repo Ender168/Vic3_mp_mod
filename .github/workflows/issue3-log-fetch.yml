@@ -22,24 +22,35 @@ jobs:
           echo "Downloaded bytes: $(stat -c%s /tmp/issue3.zip)"
           file /tmp/issue3.zip
 
-      - name: Inspect archive and logs
+      - name: Inspect crash window and metadata
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p /tmp/issue3
           unzip -q /tmp/issue3.zip -d /tmp/issue3
-          echo "===== ARCHIVE FILE LIST ====="
-          find /tmp/issue3 -type f -printf '%P\n' | sort
+          root=/tmp/issue3/victoria3_01260806_153722
 
-          echo "===== CRASH-RELEVANT EXCERPTS ====="
-          while IFS= read -r -d '' f; do
-            rel="${f#/tmp/issue3/}"
+          echo "===== ARCHIVE FILE LIST ====="
+          find "$root" -type f -printf '%P\n' | sort
+
+          for f in "$root/exception.txt" "$root/meta.yml" "$root/pdx_settings.json"; do
             echo
-            echo "===== FILE: $rel ====="
-            echo "--- first 20 lines ---"
-            head -n 20 "$f" || true
-            echo "--- matching error/fatal/assert/exception lines (last 300) ---"
-            grep -Ein 'error|fatal|assert|exception|crash|invalid|failed|missing|unknown|duplicate|could not|not found|stack|access violation' "$f" | tail -n 300 || true
-            echo "--- last 250 lines ---"
-            tail -n 250 "$f" || true
-          done < <(find /tmp/issue3 -type f \( -iname '*.log' -o -iname '*.txt' -o -iname '*.meta' \) -print0)
+            echo "===== FILE: ${f#$root/} ====="
+            cat "$f" || true
+          done
+
+          for f in "$root/logs/debug.log" "$root/logs/error.log" "$root/logs/game.log"; do
+            echo
+            echo "===== CRASH WINDOW: ${f#$root/} ====="
+            grep -E '^\[15:37:(0[8-9]|1[0-9]|2[0-4])\]' "$f" || true
+            echo "===== LAST 120 LINES: ${f#$root/} ====="
+            tail -n 120 "$f" || true
+          done
+
+          echo
+          echo "===== MINIDUMP FILE INFO ====="
+          file "$root/minidump.dmp" || true
+          echo "===== MINIDUMP ASCII STRINGS: relevant tail ====="
+          strings -a "$root/minidump.dmp" | grep -Ei 'victoria3|exception|access|state|country|building|pop|history|jomini|clausewitz|assert|error|fatal' | tail -n 300 || true
+          echo "===== MINIDUMP UTF16 STRINGS: relevant tail ====="
+          strings -el "$root/minidump.dmp" | grep -Ei 'victoria3|exception|access|state|country|building|pop|history|jomini|clausewitz|assert|error|fatal' | tail -n 300 || true
