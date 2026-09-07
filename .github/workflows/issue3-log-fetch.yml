@@ -16,41 +16,80 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 \
-            -o /tmp/issue3.zip \
+          curl -L --fail --retry 3 --retry-delay 2 -o /tmp/issue3.zip \
             "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
+          mkdir -p /tmp/issue3
+          unzip -q /tmp/issue3.zip -d /tmp/issue3
           echo "Downloaded bytes: $(stat -c%s /tmp/issue3.zip)"
-          file /tmp/issue3.zip
 
-      - name: Inspect crash window and metadata
+      - name: Search full logs for gamestate-history errors
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/issue3
-          unzip -q /tmp/issue3.zip -d /tmp/issue3
           root=/tmp/issue3/victoria3_01260806_153722
-
-          echo "===== ARCHIVE FILE LIST ====="
-          find "$root" -type f -printf '%P\n' | sort
-
-          for f in "$root/exception.txt" "$root/meta.yml" "$root/pdx_settings.json"; do
-            echo
-            echo "===== FILE: ${f#$root/} ====="
-            cat "$f" || true
-          done
-
           for f in "$root/logs/debug.log" "$root/logs/error.log" "$root/logs/game.log"; do
             echo
-            echo "===== CRASH WINDOW: ${f#$root/} ====="
-            grep -E '^\[15:37:(0[8-9]|1[0-9]|2[0-4])\]' "$f" || true
-            echo "===== LAST 120 LINES: ${f#$root/} ====="
-            tail -n 120 "$f" || true
+            echo "===== HISTORY/GAMESTATE MATCHES: ${f#$root/} ====="
+            grep -Ein 'gamestate|population|pop history|country government|history|region_state|create_state|state history|building history|country history|ownership|invalid state|invalid country|country .*not|state .*not|failed.*state|failed.*country|no state|no country' "$f" | tail -n 800 || true
           done
 
-          echo
-          echo "===== MINIDUMP FILE INFO ====="
-          file "$root/minidump.dmp" || true
-          echo "===== MINIDUMP ASCII STRINGS: relevant tail ====="
-          strings -a "$root/minidump.dmp" | grep -Ei 'victoria3|exception|access|state|country|building|pop|history|jomini|clausewitz|assert|error|fatal' | tail -n 300 || true
-          echo "===== MINIDUMP UTF16 STRINGS: relevant tail ====="
-          strings -el "$root/minidump.dmp" | grep -Ei 'victoria3|exception|access|state|country|building|pop|history|jomini|clausewitz|assert|error|fatal' | tail -n 300 || true
+      - name: Compare history consistency in 0.1.0 and 0.1.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone -q https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
+          cd /tmp/repo
+          python3 - <<'PY'
+          import re, subprocess, pathlib
+
+          commits = {
+              '0.1.0': '1224b751e51d2d5450030aa4ad33bd4ccee22769',
+              '0.1.1': '0bd2c62228b734773fc5dcba32bce5fb1b3c1503',
+          }
+
+          state_pat = re.compile(r's:([A-Z0-9_]+)\s*=\s*\{')
+          country_pat = re.compile(r'country\s*=\s*"?c:([A-Z0-9_]+)"?')
+          region_pat = re.compile(r'region_state\s*:\s*([A-Z0-9_]+)')
+
+          def show(commit, path):
+              try:
+                  return subprocess.check_output(['git','show',f'{commit}:{path}'], text=True, errors='replace')
+              except subprocess.CalledProcessError:
+                  return ''
+
+          def parse_state_owners(txt):
+              owners = {}
+              starts = list(state_pat.finditer(txt))
+              for i, m in enumerate(starts):
+                  block = txt[m.start(): starts[i+1].start() if i+1 < len(starts) else len(txt)]
+                  tags = country_pat.findall(block)
+                  owners[m.group(1)] = set(tags)
+              return owners
+
+          for label, commit in commits.items():
+              states_txt = show(commit, 'common/history/states/00_states.txt')
+              owners = parse_state_owners(states_txt)
+              print(f'===== {label}: states={len(owners)} =====')
+              mismatches=[]
+              missing_states=[]
+              for kind in ('pops','buildings'):
+                  out = subprocess.check_output(['git','ls-tree','-r','--name-only',commit,f'common/history/{kind}'], text=True)
+                  for path in out.splitlines():
+                      if not path.endswith('.txt'): continue
+                      txt=show(commit,path)
+                      starts=list(state_pat.finditer(txt))
+                      for i,m in enumerate(starts):
+                          state=m.group(1)
+                          block=txt[m.start(): starts[i+1].start() if i+1<len(starts) else len(txt)]
+                          regs=sorted(set(region_pat.findall(block)))
+                          if state not in owners:
+                              if regs: missing_states.append((kind,path,state,regs))
+                              continue
+                          for reg in regs:
+                              if reg not in owners[state]:
+                                  mismatches.append((kind,path,state,reg,sorted(owners[state])))
+              print('MISMATCH_COUNT',len(mismatches))
+              for x in mismatches[:250]: print('MISMATCH',*x)
+              print('MISSING_STATE_COUNT',len(missing_states))
+              for x in missing_states[:100]: print('MISSING_STATE',*x)
+          PY
