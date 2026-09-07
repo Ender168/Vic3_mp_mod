@@ -12,46 +12,100 @@ jobs:
   inspect-attachment:
     runs-on: ubuntu-latest
     steps:
-      - name: Audit country histories
+      - name: Prepare mod and vanilla 1.13.10 common
         shell: bash
         run: |
           set -euo pipefail
-          git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
-          cd /tmp/repo
-          echo '===== COUNTRY HISTORY FILES ====='
-          for f in common/history/countries/*.txt; do
-            echo
-            echo "===== $f ====="
-            cat "$f"
-          done
-          echo
-          echo '===== POLITICS/GOVERNMENT RELATED STATEMENTS ====='
-          grep -RniE 'government|politic|law|interest_group|legitimacy|ruler|character|ideology|party|institution|technology|tech|monarch|republic|theocracy|corporate|distribution|voting|succession|regime' common/history/countries || true
+          git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/mod
+          git clone -q --filter=blob:none --no-checkout https://github.com/settintotrieste/V3-Vanilla-Extract.git /tmp/van
+          git -C /tmp/van sparse-checkout init --cone
+          git -C /tmp/van sparse-checkout set game/common/history/countries game/common/laws game/common/scripted_effects game/common/government_types game/common/country_definitions
+          git -C /tmp/van checkout -q eba06b7e4c47741732d6eaa7698ba5a5c25716a1
 
-      - name: Audit duplicate effects and suspicious values
+      - name: Compare filenames and tag history
         shell: bash
         run: |
           set -euo pipefail
-          cd /tmp/repo
           python3 - <<'PY'
           import pathlib,re,collections
-          paths=sorted(pathlib.Path('common/history/countries').glob('*.txt'))
-          # Gather effect-like keys per country file. Repeated keys are often legal, but unexpected heavy duplication is useful.
-          for p in paths:
+          moddir=pathlib.Path('/tmp/mod/common/history/countries')
+          vandir=pathlib.Path('/tmp/van/game/common/history/countries')
+          modfiles={p.name:p for p in moddir.glob('*.txt')}
+          vanfiles={p.name:p for p in vandir.glob('*.txt')}
+          print('MOD_FILES',len(modfiles),'VAN_FILES',len(vanfiles))
+          for name,p in sorted(modfiles.items()):
+              print('FILENAME',name,'COLLIDES_WITH_VANILLA',name in vanfiles)
+          tags=[]
+          for p in modfiles.values():
               s=p.read_text(encoding='utf-8-sig')
-              keys=re.findall(r'(?m)^\s*([a-zA-Z_][a-zA-Z0-9_:]*)\s*=\s*',s)
-              c=collections.Counter(keys)
-              print('FILE',p)
-              print(' KEYS',dict(c))
-              # country scope and top-level quoted identifiers for laws etc
-              for pat,label in [
-                (r'activate_law\s*=\s*law_type:([a-z0-9_]+)','LAW'),
-                (r'law\s*=\s*law_type:([a-z0-9_]+)','LAW2'),
-                (r'add_technology\s*=\s*([a-z0-9_]+)','TECH'),
-                (r'set_government_type\s*=\s*([a-z0-9_]+)','GOV'),
-                (r'set_ruling_interest_groups\s*=\s*\{([^}]*)\}','RULING_IG'),
-                (r'interest_group:([a-z0-9_]+)','IG'),
-              ]:
-                vals=re.findall(pat,s,re.S)
-                if vals: print(' ',label,vals)
+              tags += re.findall(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',s)
+          tags=sorted(set(tags))
+          print('TAGS',tags)
+          # Locate every vanilla history file containing each tag scope.
+          for tag in tags:
+              print('\n===== TAG',tag,'=====')
+              occ=[]
+              pat=re.compile(r'(?m)^\s*c:'+re.escape(tag)+r'\s*\?=\s*\{')
+              for p in vandir.glob('*.txt'):
+                  s=p.read_text(encoding='utf-8-sig')
+                  if pat.search(s): occ.append(p)
+              print('VANILLA_SCOPE_FILES',[p.name for p in occ])
+              print('MOD_SCOPE_FILES',[p.name for p in modfiles.values() if pat.search(p.read_text(encoding='utf-8-sig'))])
+              for p in occ:
+                  print('--- VANILLA FILE',p.name,'---')
+                  s=p.read_text(encoding='utf-8-sig')
+                  ms=list(re.finditer(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',s))
+                  for i,m in enumerate(ms):
+                      if m.group(1)!=tag: continue
+                      block=s[m.start():ms[i+1].start() if i+1<len(ms) else len(s)]
+                      print(block[:12000])
+          PY
+
+      - name: Audit combined government laws
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re,collections
+          moddir=pathlib.Path('/tmp/mod/common/history/countries'); vandir=pathlib.Path('/tmp/van/game/common/history/countries')
+          modfiles={p.name:p for p in moddir.glob('*.txt')}; vanfiles={p.name:p for p in vandir.glob('*.txt')}
+          tags=set()
+          for p in modfiles.values(): tags.update(re.findall(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',p.read_text(encoding='utf-8-sig')))
+          # Parse law definitions to law groups/categories from 1.13.10.
+          lawdir=pathlib.Path('/tmp/van/game/common/laws')
+          law_to_group={}
+          for p in lawdir.rglob('*.txt'):
+              s=p.read_text(encoding='utf-8-sig')
+              starts=list(re.finditer(r'(?m)^\s*(law_[a-z0-9_]+)\s*=\s*\{',s))
+              for i,m in enumerate(starts):
+                  b=s[m.start():starts[i+1].start() if i+1<len(starts) else len(s)]
+                  gm=re.search(r'group\s*=\s*([a-z0-9_]+)',b)
+                  if gm: law_to_group[m.group(1)]=gm.group(1)
+          print('LAW_DEFS_WITH_GROUP',len(law_to_group))
+          # Virtual file set: mod same-name overrides vanilla, distinct names are additive.
+          virtual=dict(vanfiles); virtual.update(modfiles)
+          for tag in sorted(tags):
+              laws=[]; effects=[]; files=[]
+              pat=re.compile(r'(?m)^\s*c:'+re.escape(tag)+r'\s*\?=\s*\{')
+              for name,p in sorted(virtual.items()):
+                  s=p.read_text(encoding='utf-8-sig')
+                  ms=list(re.finditer(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',s))
+                  for i,m in enumerate(ms):
+                      if m.group(1)!=tag: continue
+                      b=s[m.start():ms[i+1].start() if i+1<len(ms) else len(s)]
+                      ls=re.findall(r'activate_law\s*=\s*law_type:([a-z0-9_]+)',b)
+                      es=re.findall(r'\b(effect_starting_politics_[a-z0-9_]+)\s*=\s*yes',b)
+                      if ls or es:
+                          files.append(name); laws += [(x,name) for x in ls]; effects += [(x,name) for x in es]
+              print('\nTAG',tag,'FILES',files)
+              print(' EFFECTS',effects)
+              print(' LAWS',laws)
+              bygrp=collections.defaultdict(list); unknown=[]
+              for law,name in laws:
+                  g=law_to_group.get(law)
+                  if g: bygrp[g].append((law,name))
+                  else: unknown.append((law,name))
+              print(' GROUPS')
+              for g,v in sorted(bygrp.items()): print('  ',g,v)
+              print(' UNKNOWN_LAWS',unknown)
           PY
