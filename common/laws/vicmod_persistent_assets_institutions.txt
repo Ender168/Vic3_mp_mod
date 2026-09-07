@@ -1,0 +1,56 @@
+﻿# Issue #4: адаптация институционального слоя Persistent Assets под Victoria 3 1.13.11.
+# Исходная идея: половина эффекта Education/Healthcare остается глобальной,
+# вторая половина обеспечивается физическими School/Hospital в конкретном штате.
+# INJECT-модификаторы складываются с ванильными, поэтому ниже вычитается/возвращается ровно 50%.
+
+# EDUCATION
+INJECT:law_religious_schools = {
+	institution_modifier = {
+		state_conversion_mult = -0.10
+		state_education_access_add = -0.05
+		interest_group_ig_devout_pol_str_mult = -0.05
+	}
+}
+
+INJECT:law_private_schools = {
+	institution_modifier = {
+		state_education_access_wealth_add = -0.0025
+		interest_group_ig_intelligentsia_pol_str_mult = -0.05
+	}
+}
+
+INJECT:law_public_schools = {
+	institution_modifier = {
+		state_assimilation_mult = -0.0625
+		state_education_access_add = -0.0625
+		country_education_fervor_add = -2.5
+		state_literacy_growth_add = -0.00005
+	}
+}
+
+# HEALTHCARE
+INJECT:law_charitable_health_system = {
+	institution_modifier = {
+		state_mortality_mult = 0.015
+		interest_group_ig_devout_pol_str_mult = -0.05
+		state_pollution_reduction_health_mult = 0.05
+		state_food_security_add = -0.01
+	}
+}
+
+INJECT:law_private_health_insurance = {
+	institution_modifier = {
+		interest_group_ig_petty_bourgeoisie_pol_str_mult = -0.05
+		state_mortality_wealth_mult = 0.001
+		state_pollution_reduction_health_mult = 0.05
+		state_upper_strata_standard_of_living_add = -0.25
+	}
+}
+
+INJECT:law_public_health_insurance = {
+	institution_modifier = {
+		state_mortality_mult = 0.025
+		state_pollution_reduction_health_mult = 0.075
+		state_standard_of_living_add = -0.25
+	}
+}
