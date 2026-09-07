@@ -19,64 +19,70 @@ jobs:
           git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/mod
           git clone -q --filter=blob:none --no-checkout https://github.com/settintotrieste/V3-Vanilla-Extract.git /tmp/van
           git -C /tmp/van sparse-checkout init --cone
-          git -C /tmp/van sparse-checkout set game/common/history/countries game/common/history/characters game/common/laws game/common/scripted_effects game/common/government_types game/common/country_definitions
+          git -C /tmp/van sparse-checkout set game/common/country_definitions game/common/history/characters game/common/history/countries
           git -C /tmp/van checkout -q eba06b7e4c47741732d6eaa7698ba5a5c25716a1
 
-      - name: Confirm governance principle coverage of modified countries
+      - name: Validate definitions and capital ownership
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           import pathlib,re,collections
-          md=pathlib.Path('/tmp/mod/common/history/countries')
-          vd=pathlib.Path('/tmp/van/game/common/history/countries')
-          mod={p.name:p for p in md.glob('*.txt')}; van={p.name:p for p in vd.glob('*.txt')}; virtual=dict(van); virtual.update(mod)
-          # exact 1.13.10 law groups
-          law_to_group={}
-          for p in pathlib.Path('/tmp/van/game/common/laws').rglob('*.txt'):
+          root=pathlib.Path('/tmp/mod')
+          st=(root/'common/history/states/00_states.txt').read_text(encoding='utf-8-sig')
+          sr=re.compile(r'(?m)^\s*s:(STATE_[A-Z0-9_]+)\s*=\s*\{')
+          cr=re.compile(r'create_state\s*=\s*\{(.*?)\n\s*\}',re.S)
+          owners=collections.defaultdict(set)
+          sms=list(sr.finditer(st))
+          for i,m in enumerate(sms):
+              sn=m.group(1); b=st[m.start():sms[i+1].start() if i+1<len(sms) else len(st)]
+              for cm in cr.finditer(b):
+                  owners[sn].update(re.findall(r'country\s*=\s*c:([A-Z0-9_]+)',cm.group(1)))
+          active=set().union(*owners.values())
+
+          # Parse country definitions.
+          defs={}
+          for p in pathlib.Path('/tmp/van/game/common/country_definitions').glob('*.txt'):
               s=p.read_text(encoding='utf-8-sig')
-              ms=list(re.finditer(r'(?m)^\s*(law_[a-z0-9_]+)\s*=\s*\{',s))
+              ms=list(re.finditer(r'(?m)^([A-Z0-9_]{3})\s*=\s*\{',s))
               for i,m in enumerate(ms):
                   b=s[m.start():ms[i+1].start() if i+1<len(ms) else len(s)]
-                  gm=re.search(r'group\s*=\s*(lawgroup_[a-z0-9_]+)',b)
-                  if gm: law_to_group[m.group(1)]=gm.group(1)
-          # scripted politics effects and their governance/distribution laws
-          pe=(pathlib.Path('/tmp/van/game/common/scripted_effects/00_political_setup.txt').read_text(encoding='utf-8-sig'))
-          effects={}
-          ems=list(re.finditer(r'(?m)^\s*(effect_starting_politics_[a-z0-9_]+)\s*=\s*\{',pe))
-          for i,m in enumerate(ems):
-              b=pe[m.start():ems[i+1].start() if i+1<len(ems) else len(pe)]
-              effects[m.group(1)]=re.findall(r'activate_law\s*=\s*law_type:([a-z0-9_]+)',b)
-          tags=set()
-          for p in mod.values(): tags.update(re.findall(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',p.read_text(encoding='utf-8-sig')))
-          for tag in sorted(tags):
-              explicit=[]; effs=[]; files=[]
-              pat=re.compile(r'(?m)^\s*c:'+tag+r'\s*\?=\s*\{')
-              for name,p in sorted(virtual.items()):
-                  s=p.read_text(encoding='utf-8-sig'); ms=list(re.finditer(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',s))
-                  for i,m in enumerate(ms):
-                      if m.group(1)!=tag: continue
-                      b=s[m.start():ms[i+1].start() if i+1<len(ms) else len(s)]
-                      files.append(name)
-                      explicit += re.findall(r'activate_law\s*=\s*law_type:([a-z0-9_]+)',b)
-                      effs += re.findall(r'\b(effect_starting_politics_[a-z0-9_]+)\s*=\s*yes',b)
-              laws=list(explicit)
-              for e in effs: laws += effects.get(e,[])
-              gov=[l for l in laws if law_to_group.get(l)=='lawgroup_governance_principles']
-              dop=[l for l in laws if law_to_group.get(l)=='lawgroup_distribution_of_power']
-              print('TAG',tag,'FILES',files,'EFFECTS',effs,'GOV',gov,'DISTRIBUTION',dop)
-          PY
+                  cap=re.search(r'capital\s*=\s*(STATE_[A-Z0-9_]+)',b)
+                  typ=re.search(r'country_type\s*=\s*([a-z0-9_]+)',b)
+                  tier=re.search(r'tier\s*=\s*([a-z0-9_]+)',b)
+                  defs[m.group(1)]={'file':p.name,'capital':cap.group(1) if cap else None,'type':typ.group(1) if typ else None,'tier':tier.group(1) if tier else None}
+          print('ACTIVE_COUNTRIES',len(active),'DEFINITIONS',len(defs))
+          missing=sorted(active-set(defs))
+          print('ACTIVE_WITHOUT_DEFINITION',len(missing),missing)
 
-      - name: Inspect all Sokoto references and capital ownership
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/mod
-          echo '===== MOD SOK REFERENCES ====='
-          grep -RniE '\bc:SOK\b|\bSOK\b|STATE_SOKOTO' . --include='*.txt' --include='*.json' --include='*.yml' || true
-          echo '===== VANILLA SOK CHARACTER REFERENCES ====='
-          grep -RniE '\bc:SOK\b|\bSOK\b|STATE_SOKOTO' /tmp/van/game/common/history/characters || true
-          echo '===== VANILLA SOK COUNTRY DEFINITION ====='
-          grep -Rni -A30 -B3 'SOK' /tmp/van/game/common/country_definitions || true
-          echo '===== TEST-VERSION SOK STATE HISTORY ====='
-          grep -n -A120 -B5 's:STATE_SOKOTO' common/history/states/00_states.txt || true
+          modtags=set()
+          for p in (root/'common/history/countries').glob('*.txt'):
+              modtags.update(re.findall(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',p.read_text(encoding='utf-8-sig')))
+          for tag in sorted(modtags):
+              d=defs.get(tag)
+              if not d:
+                  print('MODTAG',tag,'NO_DEFINITION'); continue
+              cap=d['capital']; capowners=sorted(owners.get(cap,set())) if cap else []
+              print('MODTAG',tag,'TYPE',d['type'],'TIER',d['tier'],'CAPITAL',cap,'CAPITAL_OWNERS',capowners,'OWNS_CAPITAL',tag in capowners)
+
+          # All active countries whose declared capital is not owned, to catch a second latent crash source.
+          bad=[]
+          for tag in sorted(active):
+              d=defs.get(tag)
+              if not d or not d['capital']: continue
+              if tag not in owners.get(d['capital'],set()): bad.append((tag,d['capital'],sorted(owners.get(d['capital'],set()))))
+          print('ACTIVE_CAPITAL_NOT_OWNED_COUNT',len(bad))
+          for x in bad: print('ACTIVE_CAPITAL_NOT_OWNED',x)
+
+          # Character history coverage for modified tags.
+          chardir=pathlib.Path('/tmp/van/game/common/history/characters')
+          for tag in sorted(modtags):
+              count=0; files=[]
+              pat=re.compile(r'(?m)^\s*c:'+tag+r'\s*\?=\s*\{')
+              for p in chardir.glob('*.txt'):
+                  s=p.read_text(encoding='utf-8-sig')
+                  if pat.search(s):
+                      files.append(p.name)
+                      count += len(re.findall(r'create_character\s*=\s*\{',s))
+              print('CHAR_HISTORY',tag,'FILES',files,'CREATE_CHARACTER_FILECOUNT_RAW',count)
+          PY
