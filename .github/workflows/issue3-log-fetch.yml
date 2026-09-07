@@ -20,76 +20,147 @@ jobs:
             "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
           mkdir -p /tmp/issue3
           unzip -q /tmp/issue3.zip -d /tmp/issue3
-          echo "Downloaded bytes: $(stat -c%s /tmp/issue3.zip)"
 
-      - name: Search full logs for gamestate-history errors
+      - name: Crash-log focused search
         shell: bash
         run: |
           set -euo pipefail
           root=/tmp/issue3/victoria3_01260806_153722
           for f in "$root/logs/debug.log" "$root/logs/error.log" "$root/logs/game.log"; do
-            echo
-            echo "===== HISTORY/GAMESTATE MATCHES: ${f#$root/} ====="
-            grep -Ein 'gamestate|population|pop history|country government|history|region_state|create_state|state history|building history|country history|ownership|invalid state|invalid country|country .*not|state .*not|failed.*state|failed.*country|no state|no country' "$f" | tail -n 800 || true
+            echo "===== ${f#$root/} ====="
+            grep -Ein 'gamestate|CGSG|population|government|history|region_state|province|diplom|subject|pact|culture|homeland|invalid|duplicate|already exists|failed|error|assert' "$f" | tail -n 1500 || true
           done
 
-      - name: Compare history consistency in 0.1.0 and 0.1.1
+      - name: Static validate test-version
         shell: bash
         run: |
           set -euo pipefail
-          git clone -q https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
+          git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
           cd /tmp/repo
           python3 - <<'PY'
-          import re, subprocess, pathlib
+          import pathlib, re, collections
 
-          commits = {
-              '0.1.0': '1224b751e51d2d5450030aa4ad33bd4ccee22769',
-              '0.1.1': '0bd2c62228b734773fc5dcba32bce5fb1b3c1503',
-          }
+          root = pathlib.Path('.')
+          txts = list(root.rglob('*.txt'))
+          print('TXT_COUNT', len(txts))
+          bad_utf=[]; nul=[]; braces=[]
+          for p in txts:
+              b=p.read_bytes()
+              if b'\x00' in b: nul.append(str(p))
+              try: s=b.decode('utf-8-sig')
+              except UnicodeDecodeError as e:
+                  bad_utf.append((str(p),str(e))); continue
+              # crude but useful after removing comments
+              clean='\n'.join(line.split('#',1)[0] for line in s.splitlines())
+              if clean.count('{') != clean.count('}'):
+                  braces.append((str(p),clean.count('{'),clean.count('}')))
+          print('NUL_FILES', nul)
+          print('BAD_UTF8', bad_utf)
+          print('BRACE_MISMATCH', braces)
 
-          state_pat = re.compile(r's:([A-Z0-9_]+)\s*=\s*\{')
-          country_pat = re.compile(r'country\s*=\s*"?c:([A-Z0-9_]+)"?')
-          region_pat = re.compile(r'region_state\s*:\s*([A-Z0-9_]+)')
+          st_path=root/'common/history/states/00_states.txt'
+          st=st_path.read_text(encoding='utf-8-sig', errors='strict')
+          state_re=re.compile(r'(?m)^\s*s:([A-Z0-9_]+)\s*=\s*\{')
+          create_re=re.compile(r'create_state\s*=\s*\{(.*?)\n\s*\}', re.S)
+          country_re=re.compile(r'country\s*=\s*c:([A-Z0-9_]+)')
+          prov_re=re.compile(r'\bx[0-9A-Fa-f]{6}\b')
+          states=list(state_re.finditer(st))
+          state_names=[m.group(1) for m in states]
+          print('STATE_KEYS',len(state_names),'DUP_STATE_KEYS',[k for k,v in collections.Counter(state_names).items() if v>1])
+          allprov=collections.defaultdict(list)
+          owners=collections.defaultdict(set)
+          empty=[]; no_country=[]; within_dup=[]
+          for i,m in enumerate(states):
+              name=m.group(1)
+              block=st[m.start():states[i+1].start() if i+1<len(states) else len(st)]
+              for j,cm in enumerate(create_re.finditer(block)):
+                  cb=cm.group(1)
+                  cs=country_re.findall(cb)
+                  ps=prov_re.findall(cb)
+                  if not cs: no_country.append((name,j))
+                  if not ps: empty.append((name,j,cs))
+                  if len(ps)!=len(set(ps)): within_dup.append((name,j,[x for x,c in collections.Counter(ps).items() if c>1]))
+                  for c in cs: owners[name].add(c)
+                  for p in ps: allprov[p].append((name, tuple(cs)))
+          global_dups={p:v for p,v in allprov.items() if len(v)>1}
+          print('CREATE_STATE_EMPTY',empty[:100], 'COUNT',len(empty))
+          print('CREATE_STATE_NO_COUNTRY',no_country[:100], 'COUNT',len(no_country))
+          print('WITHIN_CREATE_DUP_PROVINCES',within_dup[:50], 'COUNT',len(within_dup))
+          print('GLOBAL_DUP_PROVINCES_COUNT',len(global_dups))
+          for p,v in list(global_dups.items())[:200]: print('GLOBAL_DUP_PROVINCE',p,v)
 
-          def show(commit, path):
-              try:
-                  return subprocess.check_output(['git','show',f'{commit}:{path}'], text=True, errors='replace')
-              except subprocess.CalledProcessError:
-                  return ''
+          # culture definitions and references
+          cult_path=root/'common/cultures/00_cultures.txt'
+          cult=cult_path.read_text(encoding='utf-8-sig')
+          cult_defs=set(re.findall(r'(?m)^([a-z0-9_]+)\s*=\s*\{',cult))
+          cu_refs=[]
+          for p in txts:
+              try:s=p.read_text(encoding='utf-8-sig')
+              except:continue
+              for c in re.findall(r'\bcu:([a-z0-9_]+)\b',s): cu_refs.append((c,str(p)))
+          missing_cu=collections.defaultdict(set)
+          for c,p in cu_refs:
+              if c not in cult_defs: missing_cu[c].add(p)
+          print('CULTURE_DEFS',len(cult_defs),'MISSING_CULTURE_REFS',len(missing_cu))
+          for c,ps in list(missing_cu.items())[:100]: print('MISSING_CULTURE',c,sorted(ps))
 
-          def parse_state_owners(txt):
-              owners = {}
-              starts = list(state_pat.finditer(txt))
-              for i, m in enumerate(starts):
-                  block = txt[m.start(): starts[i+1].start() if i+1 < len(starts) else len(txt)]
-                  tags = country_pat.findall(block)
-                  owners[m.group(1)] = set(tags)
-              return owners
+          # region_state references must match ownership in states history
+          mism=[]
+          for kind in ('pops','buildings'):
+              for p in (root/f'common/history/{kind}').glob('*.txt'):
+                  s=p.read_text(encoding='utf-8-sig')
+                  sms=list(state_re.finditer(s))
+                  for i,m in enumerate(sms):
+                      sn=m.group(1)
+                      block=s[m.start():sms[i+1].start() if i+1<len(sms) else len(s)]
+                      regs=set(re.findall(r'region_state\s*:\s*([A-Z0-9_]+)',block))
+                      for r in regs:
+                          if r not in owners.get(sn,set()): mism.append((kind,str(p),sn,r,sorted(owners.get(sn,set()))))
+          print('REGION_STATE_MISMATCH_COUNT',len(mism))
+          for x in mism[:100]: print('REGION_MISMATCH',x)
 
-          for label, commit in commits.items():
-              states_txt = show(commit, 'common/history/states/00_states.txt')
-              owners = parse_state_owners(states_txt)
-              print(f'===== {label}: states={len(owners)} =====')
-              mismatches=[]
-              missing_states=[]
-              for kind in ('pops','buildings'):
-                  out = subprocess.check_output(['git','ls-tree','-r','--name-only',commit,f'common/history/{kind}'], text=True)
-                  for path in out.splitlines():
-                      if not path.endswith('.txt'): continue
-                      txt=show(commit,path)
-                      starts=list(state_pat.finditer(txt))
-                      for i,m in enumerate(starts):
-                          state=m.group(1)
-                          block=txt[m.start(): starts[i+1].start() if i+1<len(starts) else len(txt)]
-                          regs=sorted(set(region_pat.findall(block)))
-                          if state not in owners:
-                              if regs: missing_states.append((kind,path,state,regs))
-                              continue
-                          for reg in regs:
-                              if reg not in owners[state]:
-                                  mismatches.append((kind,path,state,reg,sorted(owners[state])))
-              print('MISMATCH_COUNT',len(mismatches))
-              for x in mismatches[:250]: print('MISMATCH',*x)
-              print('MISSING_STATE_COUNT',len(missing_states))
-              for x in missing_states[:100]: print('MISSING_STATE',*x)
+          # Diplomacy target existence by owning at least one province/state.
+          owner_tags=set().union(*owners.values()) if owners else set()
+          dip=root/'common/history/diplomacy/00_subject_relationships.txt'
+          ds=dip.read_text(encoding='utf-8-sig')
+          scope_re=re.compile(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{')
+          scopes=list(scope_re.finditer(ds))
+          missing_targets=[]
+          for i,m in enumerate(scopes):
+              parent=m.group(1)
+              block=ds[m.start():scopes[i+1].start() if i+1<len(scopes) else len(ds)]
+              for target in re.findall(r'country\s*=\s*c:([A-Z0-9_]+)',block):
+                  if target not in owner_tags: missing_targets.append((parent,target))
+          print('OWNER_COUNTRY_COUNT',len(owner_tags))
+          print('SUBJECT_TARGETS_WITHOUT_OWNED_STATE_COUNT',len(missing_targets))
+          print('SUBJECT_TARGETS_WITHOUT_OWNED_STATE',missing_targets[:200])
+          PY
+
+      - name: Inspect minidump exception context
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip -q install minidump
+          python3 - <<'PY'
+          from minidump.minidumpfile import MinidumpFile
+          p='/tmp/issue3/victoria3_01260806_153722/minidump.dmp'
+          m=MinidumpFile.parse(p)
+          print('MINIDUMP_PARSED')
+          print('EXCEPTION',m.exception)
+          print('MODULES')
+          try:
+              for mod in m.modules.modules:
+                  print(hex(mod.baseaddress), hex(mod.size), mod.name)
+          except Exception as e: print('MODULE_ERR',repr(e))
+          print('THREADS')
+          try:
+              for t in m.threads.threads:
+                  print('THREAD',t.ThreadId,'STACK',t.Stack)
+          except Exception as e: print('THREAD_ERR',repr(e))
+          print('EXCEPTION_DIR',dir(m.exception))
+          try:
+              for rec in m.exception.exception_records:
+                  print('EXC_REC',rec)
+                  print('EXC_REC_DIR',dir(rec))
+          except Exception as e: print('EXC_REC_ERR',repr(e))
           PY
