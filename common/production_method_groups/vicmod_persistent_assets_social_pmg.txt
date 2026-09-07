@@ -1,0 +1,21 @@
+﻿# Issue #4
+
+pmg_vicmod_school_system = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_base.dds"
+	ai_selection = most_productive
+	production_methods = {
+		pm_vicmod_school_religious
+		pm_vicmod_school_private
+		pm_vicmod_school_public
+	}
+}
+
+pmg_vicmod_hospital_system = {
+	texture = "gfx/interface/icons/generic_icons/mixed_icon_base.dds"
+	ai_selection = most_productive
+	production_methods = {
+		pm_vicmod_hospital_charitable
+		pm_vicmod_hospital_private
+		pm_vicmod_hospital_public
+	}
+}
