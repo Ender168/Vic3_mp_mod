@@ -12,117 +12,69 @@ jobs:
   inspect-attachment:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare crash and test-version
+      - name: Clone test-version and 1.13 map reference
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 -o /tmp/issue3.zip \
-            "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
-          mkdir -p /tmp/issue3
-          unzip -q /tmp/issue3.zip -d /tmp/issue3
           git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
-          curl -L --fail -o /tmp/vanilla_states.txt \
-            "https://raw.githubusercontent.com/tjysdsg/Victoria-3-files/0e8b62590c36bc9fdd2c8cba3cb5dda255092656/game/common/history/states/00_states.txt"
+          git clone -q https://github.com/Victoria-3-Modding-Co-op/Community-State-Framework.git /tmp/csf
 
-      - name: Compare state topology with vanilla mirror
+      - name: Validate state history against 1.13 state-region map
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import re, collections, pathlib
-          def parse(path):
-              s=pathlib.Path(path).read_text(encoding='utf-8-sig')
-              state_re=re.compile(r'(?m)^\s*s:([A-Z0-9_]+)\s*=\s*\{')
-              create_re=re.compile(r'create_state\s*=\s*\{(.*?)\n\s*\}',re.S)
-              country_re=re.compile(r'country\s*=\s*c:([A-Z0-9_]+)')
-              prov_re=re.compile(r'\bx[0-9A-Fa-f]{6}\b')
-              states=list(state_re.finditer(s))
-              bystate={}; prov_occ=collections.defaultdict(list); within=[]
-              for i,m in enumerate(states):
-                  name=m.group(1); block=s[m.start():states[i+1].start() if i+1<len(states) else len(s)]
-                  creates=[]
-                  for j,cm in enumerate(create_re.finditer(block)):
-                      cb=cm.group(1); countries=tuple(country_re.findall(cb)); ps=prov_re.findall(cb)
-                      creates.append((countries,tuple(ps)))
-                      for p in ps: prov_occ[p].append((name,countries))
-                      d=[p for p,c in collections.Counter(ps).items() if c>1]
-                      if d: within.append((name,j,d))
-                  bystate[name]=creates
-              global_dups={p:tuple(v) for p,v in prov_occ.items() if len(v)>1}
-              return bystate,global_dups,within
-          mod, md, mw=parse('/tmp/repo/common/history/states/00_states.txt')
-          van, vd, vw=parse('/tmp/vanilla_states.txt')
-          print('MOD_GLOBAL_DUPS',len(md),'VANILLA_GLOBAL_DUPS',len(vd))
-          new=set(md)-set(vd); removed=set(vd)-set(md); common=set(md)&set(vd)
-          print('NEW_DUP_IDS',len(new),sorted(new))
-          print('REMOVED_DUP_IDS',len(removed),sorted(removed))
-          changed=[p for p in common if md[p]!=vd[p]]
-          print('COMMON_DUP_CHANGED_OWNERS',len(changed))
-          for p in changed[:200]: print('DUP_OWNER_CHANGE',p,'MOD',md[p],'VAN',vd[p])
-          print('MOD_WITHIN',mw)
-          print('VANILLA_WITHIN',vw)
-          # Compare only province topology per state, ignoring owner changes.
-          topo_diff=[]
-          for st in sorted(set(mod)|set(van)):
-              mp=collections.Counter(p for _,ps in mod.get(st,[]) for p in ps)
-              vp=collections.Counter(p for _,ps in van.get(st,[]) for p in ps)
-              if mp!=vp:
-                  topo_diff.append((st, sorted((mp-vp).elements()), sorted((vp-mp).elements())))
-          print('STATE_PROVINCE_TOPOLOGY_DIFF_COUNT',len(topo_diff))
-          for x in topo_diff[:200]: print('TOPO_DIFF',x)
-          PY
+          import pathlib,re,collections
+          mod=pathlib.Path('/tmp/repo/common/history/states/00_states.txt').read_text(encoding='utf-8-sig')
+          refdir=pathlib.Path('/tmp/csf/docs/1.13 State Regions')
+          if not refdir.exists():
+              print('REFDIR_MISSING', list(pathlib.Path('/tmp/csf/docs').iterdir())[:30]); raise SystemExit(1)
+          # Parse exact 1.13 state region province membership.
+          ref='\n'.join(p.read_text(encoding='utf-8-sig') for p in sorted(refdir.glob('*.txt')))
+          sr_re=re.compile(r'(?m)^\s*(STATE_[A-Z0-9_]+)\s*=\s*\{')
+          prov_re=re.compile(r'\bx[0-9A-Fa-f]{6}\b')
+          srs=list(sr_re.finditer(ref)); membership={}
+          for i,m in enumerate(srs):
+              name=m.group(1); block=ref[m.start():srs[i+1].start() if i+1<len(srs) else len(ref)]
+              pm=re.search(r'provinces\s*=\s*\{(.*?)\}',block,re.S)
+              membership[name]=set(x.upper() for x in prov_re.findall(pm.group(1))) if pm else set()
+          print('REF_STATE_REGIONS',len(membership))
 
-      - name: Inspect crash registers and stack
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 -m pip -q install minidump capstone
-          python3 - <<'PY'
-          import struct
-          from minidump.minidumpfile import MinidumpFile
-          from capstone import Cs, CS_ARCH_X86, CS_MODE_64
-          p='/tmp/issue3/victoria3_01260806_153722/minidump.dmp'
-          m=MinidumpFile.parse(p)
-          rec=m.exception.exception_records[0]
-          base=next(x.baseaddress for x in m.modules.modules if str(x.name).lower().endswith('victoria3.exe'))
-          size=next(x.size for x in m.modules.modules if str(x.name).lower().endswith('victoria3.exe'))
-          fault=rec.ExceptionRecord.ExceptionAddress
-          print('FAULT',hex(fault),'BASE',hex(base),'RVA',hex(fault-base),'WRITE_TARGET',hex(rec.ExceptionRecord.ExceptionInformation[1]))
-          # AMD64 CONTEXT from exception stream.
-          off=rec.ThreadContext.Rva
-          if not off:
-              # library represents location descriptor with file_offset on some versions
-              off=getattr(rec.ThreadContext,'file_offset',None)
-          print('THREAD_CONTEXT_OBJECT',rec.ThreadContext,'DIR',dir(rec.ThreadContext))
-          # reported offset in stream is exposed as Rva in LocationDescriptor
-          candidates=[]
-          for attr in ('Rva','rva','FileOffset','file_offset'):
-              v=getattr(rec.ThreadContext,attr,None)
-              if isinstance(v,int) and v>0: candidates.append(v)
-          print('CONTEXT_OFF_CANDIDATES',candidates)
-          # Known from parsed descriptor if API does not expose a useful property.
-          ctxoff=candidates[0] if candidates else 56574
-          with open(p,'rb') as f:
-              f.seek(ctxoff); c=f.read(1232)
-          def q(o): return struct.unpack_from('<Q',c,o)[0]
-          regs={
-            'RAX':q(0x78),'RCX':q(0x80),'RDX':q(0x88),'RBX':q(0x90),'RSP':q(0x98),'RBP':q(0xA0),'RSI':q(0xA8),'RDI':q(0xB0),
-            'R8':q(0xB8),'R9':q(0xC0),'R10':q(0xC8),'R11':q(0xD0),'R12':q(0xD8),'R13':q(0xE0),'R14':q(0xE8),'R15':q(0xF0),'RIP':q(0xF8)}
-          print('REGS', {k:hex(v) for k,v in regs.items()})
-          reader=m.get_reader()
-          try:
-              code=reader.read(regs['RIP'],48)
-              print('CODE_BYTES',code.hex())
-              md=Cs(CS_ARCH_X86,CS_MODE_64)
-              for ins in md.disasm(code,regs['RIP']): print('INSN',hex(ins.address),ins.mnemonic,ins.op_str)
-          except Exception as e: print('CODE_READ_ERR',repr(e))
-          try:
-              stack=reader.read(regs['RSP'],4096)
-              vals=[]
-              for i in range(0,len(stack)-7,8):
-                  v=struct.unpack_from('<Q',stack,i)[0]
-                  if base <= v < base+size: vals.append((i,v,v-base))
-              print('STACK_CODE_PTRS',len(vals))
-              for x in vals[:120]: print('STACK_PTR','sp+'+hex(x[0]),hex(x[1]),'RVA',hex(x[2]))
-          except Exception as e: print('STACK_READ_ERR',repr(e))
+          hist_re=re.compile(r'(?m)^\s*s:(STATE_[A-Z0-9_]+)\s*=\s*\{')
+          create_re=re.compile(r'create_state\s*=\s*\{(.*?)\n\s*\}',re.S)
+          hs=list(hist_re.finditer(mod)); wrong=[]; unknown=[]; zero_create=[]; counts=[]
+          for i,m in enumerate(hs):
+              name=m.group(1); block=mod[m.start():hs[i+1].start() if i+1<len(hs) else len(mod)]
+              creates=list(create_re.finditer(block)); counts.append((name,len(creates)))
+              if not creates: zero_create.append(name)
+              if name not in membership:
+                  unknown.append(name); continue
+              allowed=membership[name]
+              for ci,cm in enumerate(creates):
+                  ps=[x.upper() for x in prov_re.findall(cm.group(1))]
+                  bad=[p for p in ps if p not in allowed]
+                  if bad: wrong.append((name,ci,bad))
+          print('HISTORY_STATES',len(hs))
+          print('UNKNOWN_STATE_REGION_COUNT',len(unknown),unknown)
+          print('ZERO_CREATE_STATE_COUNT',len(zero_create),zero_create[:100])
+          print('WRONG_STATE_MEMBERSHIP_COUNT',len(wrong))
+          for x in wrong[:300]: print('WRONG_STATE_MEMBERSHIP',x)
+
+          # Check coverage/duplicate ownership within each state against physical region.
+          dup=[]; unowned=[]
+          for i,m in enumerate(hs):
+              name=m.group(1)
+              if name not in membership: continue
+              block=mod[m.start():hs[i+1].start() if i+1<len(hs) else len(mod)]
+              allps=[]
+              for cm in create_re.finditer(block): allps += [x.upper() for x in prov_re.findall(cm.group(1))]
+              c=collections.Counter(allps)
+              ds=sorted(p for p,n in c.items() if n>1)
+              miss=sorted(membership[name]-set(allps))
+              if ds: dup.append((name,ds))
+              if miss: unowned.append((name,miss))
+          print('STATE_WITH_DUP_OWNED_PROVINCES_COUNT',len(dup))
+          for x in dup[:100]: print('DUP_IN_STATE',x)
+          print('STATE_WITH_UNOWNED_PHYSICAL_PROVINCES_COUNT',len(unowned))
+          for x in unowned[:100]: print('UNOWNED_IN_STATE',x)
           PY
