@@ -1,9 +1,9 @@
 {
-  "name": "Basic Companies, Prestige Goods & Regional Setup",
+  "name": "Basic Companies, Prestige Goods, Regional Setup & Ministries",
   "id": "vicmod.basic_companies_goods",
   "version": "0.2.0",
   "supported_game_version": "1.13.*",
-  "short_description": "Престижные товары, новые товары и стартовый региональный сетап UKR/BYE/POL по issue #1.",
+  "short_description": "Престижные товары, региональный сетап UKR/BYE/POL и адаптация Education/Healthcare из Persistent Assets под министерства и физическую инфраструктуру.",
   "tags": [
     "Economy And Buildings",
     "Gameplay",
