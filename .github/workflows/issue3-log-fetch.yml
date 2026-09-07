@@ -12,118 +12,45 @@ jobs:
   inspect-attachment:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare
+      - name: Analyze minidump fault region
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 -o /tmp/issue3.zip \
-            "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
-          mkdir -p /tmp/issue3
-          unzip -q /tmp/issue3.zip -d /tmp/issue3
-          git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
-
-      - name: Inspect crash object memory
-        shell: bash
-        run: |
-          set -euo pipefail
+          curl -L --fail --retry 3 --retry-delay 2 -o /tmp/i3.zip "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
+          unzip -q /tmp/i3.zip -d /tmp/i3
           python3 -m pip -q install minidump capstone
           python3 - <<'PY'
           import struct,re
           from minidump.minidumpfile import MinidumpFile
-          p='/tmp/issue3/victoria3_01260806_153722/minidump.dmp'
+          from capstone import Cs,CS_ARCH_X86,CS_MODE_64
+          p='/tmp/i3/victoria3_01260806_153722/minidump.dmp'
           m=MinidumpFile.parse(p); r=m.get_reader(); rec=m.exception.exception_records[0]
-          # registers established from exception AMD64 CONTEXT
-          regs={'RCX':0x20dfd9d0010,'RSI':0x2581a110550,'R9':0x2576d79ef28,'R14':0x2576d79d000,'R15':0x20dfcf80010,'RSP':0x576dffdf10,'RBP':0x576dffdf89}
           target=rec.ExceptionRecord.ExceptionInformation[1]
-          print('WRITE_TARGET',hex(target))
-          # MemoryInfo around relevant addresses
+          rip=rec.ExceptionRecord.ExceptionAddress
+          addrs={'TARGET':target,'R15':0x20dfcf80010,'RCX':0x20dfd9d0010,'RSI':0x2581a110550,'R14':0x2576d79d000,'R9':0x2576d79ef28}
+          for name,a in addrs.items():
+              for mi in m.memory_info.infos:
+                  if mi.BaseAddress <= a < mi.BaseAddress+mi.RegionSize:
+                      print('MEM',name,hex(a),'BASE',hex(mi.BaseAddress),'ALLOCBASE',hex(mi.AllocationBase),'REGIONSIZE',hex(mi.RegionSize),'STATE',mi.State,'PROTECT',mi.Protect,'ALLOC_PROTECT',mi.AllocationProtect,'TYPE',mi.Type)
+                      print('MEM_DIR',dir(mi))
+                      break
+          # target memory exactly
+          for off in (-0x40,0,0x40):
+              try: print('TARGET_BYTES',off,r.read(target+off,0x80).hex())
+              except Exception as e: print('TARGET_READ_ERR',off,repr(e))
+          # disassemble 1 KB around fault, marking RIP. This can expose calls and function boundaries.
           try:
-              print('MEMINFO_COUNT',len(m.memory_info.infos))
-              for a_name,a in [('target',target),*regs.items()]:
-                  hits=[]
-                  for mi in m.memory_info.infos:
-                      base=mi.BaseAddress; end=base+mi.RegionSize
-                      if base <= a < end: hits.append(mi)
-                  print('MEMINFO_FOR',a_name,hex(a),hits)
-          except Exception as e: print('MEMINFO_ERR',repr(e),dir(m.memory_info) if m.memory_info else None)
-          def dump(addr,n,label):
+              code=r.read(rip-0x400,0x800)
+              md=Cs(CS_ARCH_X86,CS_MODE_64)
+              for ins in md.disasm(code,rip-0x400):
+                  if rip-0x180 <= ins.address <= rip+0x100:
+                      print('CODE','FAULT>>' if ins.address==rip else '',hex(ins.address),ins.mnemonic,ins.op_str)
+          except Exception as e: print('DISASM_ERR',repr(e))
+          # dump exact pointed string-pool candidate seen on stack
+          for a in (0x25823c92700,0x25823c94d60,0x257127f58b0):
               try:
-                  b=r.read(addr,n)
-                  print('DUMP',label,hex(addr),len(b),b.hex())
-                  # printable ASCII runs
-                  for mm in re.finditer(rb'[ -~]{4,}',b): print('ASCII',label,hex(addr+mm.start()),mm.group().decode('ascii','replace')[:300])
-                  # UTF16LE runs crude
-                  text=b.decode('utf-16le','ignore')
-                  for mm in re.finditer(r'[\x20-\x7e]{4,}',text): print('UTF16',label,hex(addr+mm.start()*2),mm.group()[:300])
-                  # pointer-ish qwords, then try deref first 64
-                  for off in range(0,min(len(b)-7,0x300),8):
-                      v=struct.unpack_from('<Q',b,off)[0]
-                      if v<0x10000: continue
-                      try:
-                          bb=r.read(v,96)
-                      except: continue
-                      asc=re.findall(rb'[ -~]{4,}',bb)
-                      if asc: print('PTRASCII',label,hex(addr+off),'->',hex(v),[x.decode('ascii','replace')[:100] for x in asc[:3]])
-              except Exception as e: print('DUMP_ERR',label,hex(addr),repr(e))
-          for name,a in regs.items():
-              dump(a,0x600,name)
-          dump(target-0x100,0x300,'target_near')
-          # Scan crash stack for embedded readable strings via pointed objects.
-          dump(regs['RSP'],0x4000,'stack')
-          PY
-
-      - name: Validate pop and building references
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd /tmp/repo
-          python3 - <<'PY'
-          import pathlib,re,collections
-          root=pathlib.Path('.')
-          cult=(root/'common/cultures/00_cultures.txt').read_text(encoding='utf-8-sig')
-          cultures=set(re.findall(r'(?m)^([a-z0-9_]+)\s*=\s*\{',cult))
-          print('CULTURES',len(cultures))
-          # Pop history blocks
-          pop_errors=[]; sizes=[]; pop_cultures=collections.Counter(); religions=collections.Counter()
-          for p in sorted((root/'common/history/pops').glob('*.txt')):
-              s=p.read_text(encoding='utf-8-sig')
-              for m in re.finditer(r'create_pop\s*=\s*\{(.*?)\}',s,re.S):
-                  b=m.group(1)
-                  cm=re.search(r'culture\s*=\s*"?([a-z0-9_]+)"?',b)
-                  sm=re.search(r'size\s*=\s*(-?[0-9]+(?:\.[0-9]+)?)',b)
-                  rm=re.search(r'religion\s*=\s*"?([a-z0-9_]+)"?',b)
-                  if not cm: pop_errors.append((str(p),'missing culture',b[:180].replace('\n',' ')))
-                  else:
-                      c=cm.group(1); pop_cultures[c]+=1
-                      if c not in cultures: pop_errors.append((str(p),'unknown culture '+c,b[:180].replace('\n',' ')))
-                  if not sm: pop_errors.append((str(p),'missing/nonliteral size',b[:180].replace('\n',' ')))
-                  else:
-                      n=float(sm.group(1)); sizes.append(n)
-                      if n<=0: pop_errors.append((str(p),'nonpositive size '+str(n),b[:180].replace('\n',' ')))
-                  if rm: religions[rm.group(1)]+=1
-          print('CREATE_POP_COUNT',len(sizes),'MIN_SIZE',min(sizes) if sizes else None,'MAX_SIZE',max(sizes) if sizes else None)
-          print('POP_ERRORS',len(pop_errors))
-          for e in pop_errors[:200]: print('POP_ERROR',e)
-          print('POP_CULTURE_COUNT',len(pop_cultures),'RELIGION_REFS',len(religions),sorted(religions.items()))
-
-          # Generic country/tag references in pops/buildings must be active state owners where scopes require them.
-          st=(root/'common/history/states/00_states.txt').read_text(encoding='utf-8-sig')
-          active=set(re.findall(r'country\s*=\s*c:([A-Z0-9_]+)',st))
-          print('ACTIVE_COUNTRIES',len(active))
-          for kind in ('pops','buildings'):
-              bad=collections.defaultdict(set)
-              for p in sorted((root/f'common/history/{kind}').glob('*.txt')):
-                  s=p.read_text(encoding='utf-8-sig')
-                  for tag in re.findall(r'\bc:([A-Z0-9_]+)\b',s):
-                      if tag not in active: bad[tag].add(str(p))
-              print(kind.upper(),'NONACTIVE_TAG_REFS',len(bad))
-              for tag,ps in sorted(bad.items()): print(kind.upper(),'NONACTIVE',tag,sorted(ps))
-
-          # History country scopes in mod files and whether active.
-          scopes=collections.defaultdict(list)
-          for p in sorted((root/'common/history/countries').glob('*.txt')):
-              s=p.read_text(encoding='utf-8-sig')
-              for tag in re.findall(r'(?m)^\s*c:([A-Z0-9_]+)\s*\?=\s*\{',s): scopes[tag].append(str(p))
-          print('COUNTRY_HISTORY_SCOPES',len(scopes))
-          for tag,ps in sorted(scopes.items()): print('COUNTRY_SCOPE',tag,'ACTIVE',tag in active,ps)
+                  b=r.read(a,0x400)
+                  print('OBJ',hex(a),'HEX',b[:128].hex())
+                  for mm in re.finditer(rb'[ -~]{4,}',b): print('OBJ_ASCII',hex(a+mm.start()),mm.group().decode('ascii','replace')[:300])
+              except Exception as e: print('OBJ_ERR',hex(a),repr(e))
           PY
