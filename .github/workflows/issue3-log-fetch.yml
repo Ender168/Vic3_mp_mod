@@ -12,45 +12,46 @@ jobs:
   inspect-attachment:
     runs-on: ubuntu-latest
     steps:
-      - name: Analyze minidump fault region
+      - name: Audit country histories
         shell: bash
         run: |
           set -euo pipefail
-          curl -L --fail --retry 3 --retry-delay 2 -o /tmp/i3.zip "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
-          unzip -q /tmp/i3.zip -d /tmp/i3
-          python3 -m pip -q install minidump capstone
+          git clone -q --branch test-version --single-branch https://github.com/Ender168/Vic3_mp_mod.git /tmp/repo
+          cd /tmp/repo
+          echo '===== COUNTRY HISTORY FILES ====='
+          for f in common/history/countries/*.txt; do
+            echo
+            echo "===== $f ====="
+            cat "$f"
+          done
+          echo
+          echo '===== POLITICS/GOVERNMENT RELATED STATEMENTS ====='
+          grep -RniE 'government|politic|law|interest_group|legitimacy|ruler|character|ideology|party|institution|technology|tech|monarch|republic|theocracy|corporate|distribution|voting|succession|regime' common/history/countries || true
+
+      - name: Audit duplicate effects and suspicious values
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/repo
           python3 - <<'PY'
-          import struct,re
-          from minidump.minidumpfile import MinidumpFile
-          from capstone import Cs,CS_ARCH_X86,CS_MODE_64
-          p='/tmp/i3/victoria3_01260806_153722/minidump.dmp'
-          m=MinidumpFile.parse(p); r=m.get_reader(); rec=m.exception.exception_records[0]
-          target=rec.ExceptionRecord.ExceptionInformation[1]
-          rip=rec.ExceptionRecord.ExceptionAddress
-          addrs={'TARGET':target,'R15':0x20dfcf80010,'RCX':0x20dfd9d0010,'RSI':0x2581a110550,'R14':0x2576d79d000,'R9':0x2576d79ef28}
-          for name,a in addrs.items():
-              for mi in m.memory_info.infos:
-                  if mi.BaseAddress <= a < mi.BaseAddress+mi.RegionSize:
-                      print('MEM',name,hex(a),'BASE',hex(mi.BaseAddress),'ALLOCBASE',hex(mi.AllocationBase),'REGIONSIZE',hex(mi.RegionSize),'STATE',mi.State,'PROTECT',mi.Protect,'ALLOC_PROTECT',mi.AllocationProtect,'TYPE',mi.Type)
-                      print('MEM_DIR',dir(mi))
-                      break
-          # target memory exactly
-          for off in (-0x40,0,0x40):
-              try: print('TARGET_BYTES',off,r.read(target+off,0x80).hex())
-              except Exception as e: print('TARGET_READ_ERR',off,repr(e))
-          # disassemble 1 KB around fault, marking RIP. This can expose calls and function boundaries.
-          try:
-              code=r.read(rip-0x400,0x800)
-              md=Cs(CS_ARCH_X86,CS_MODE_64)
-              for ins in md.disasm(code,rip-0x400):
-                  if rip-0x180 <= ins.address <= rip+0x100:
-                      print('CODE','FAULT>>' if ins.address==rip else '',hex(ins.address),ins.mnemonic,ins.op_str)
-          except Exception as e: print('DISASM_ERR',repr(e))
-          # dump exact pointed string-pool candidate seen on stack
-          for a in (0x25823c92700,0x25823c94d60,0x257127f58b0):
-              try:
-                  b=r.read(a,0x400)
-                  print('OBJ',hex(a),'HEX',b[:128].hex())
-                  for mm in re.finditer(rb'[ -~]{4,}',b): print('OBJ_ASCII',hex(a+mm.start()),mm.group().decode('ascii','replace')[:300])
-              except Exception as e: print('OBJ_ERR',hex(a),repr(e))
+          import pathlib,re,collections
+          paths=sorted(pathlib.Path('common/history/countries').glob('*.txt'))
+          # Gather effect-like keys per country file. Repeated keys are often legal, but unexpected heavy duplication is useful.
+          for p in paths:
+              s=p.read_text(encoding='utf-8-sig')
+              keys=re.findall(r'(?m)^\s*([a-zA-Z_][a-zA-Z0-9_:]*)\s*=\s*',s)
+              c=collections.Counter(keys)
+              print('FILE',p)
+              print(' KEYS',dict(c))
+              # country scope and top-level quoted identifiers for laws etc
+              for pat,label in [
+                (r'activate_law\s*=\s*law_type:([a-z0-9_]+)','LAW'),
+                (r'law\s*=\s*law_type:([a-z0-9_]+)','LAW2'),
+                (r'add_technology\s*=\s*([a-z0-9_]+)','TECH'),
+                (r'set_government_type\s*=\s*([a-z0-9_]+)','GOV'),
+                (r'set_ruling_interest_groups\s*=\s*\{([^}]*)\}','RULING_IG'),
+                (r'interest_group:([a-z0-9_]+)','IG'),
+              ]:
+                vals=re.findall(pat,s,re.S)
+                if vals: print(' ',label,vals)
           PY
