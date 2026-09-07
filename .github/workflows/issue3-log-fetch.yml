@@ -1,0 +1,45 @@
+name: Issue 3 log fetch
+
+on:
+  push:
+    branches:
+      - "diagnostics/issue-3-log-fetch"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-attachment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download issue attachment
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o /tmp/issue3.zip \
+            "https://github.com/user-attachments/files/31908746/victoria3_01260806_153722.zip"
+          echo "Downloaded bytes: $(stat -c%s /tmp/issue3.zip)"
+          file /tmp/issue3.zip
+
+      - name: Inspect archive and logs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/issue3
+          unzip -q /tmp/issue3.zip -d /tmp/issue3
+          echo "===== ARCHIVE FILE LIST ====="
+          find /tmp/issue3 -type f -printf '%P\n' | sort
+
+          echo "===== CRASH-RELEVANT EXCERPTS ====="
+          while IFS= read -r -d '' f; do
+            rel="${f#/tmp/issue3/}"
+            echo
+            echo "===== FILE: $rel ====="
+            echo "--- first 20 lines ---"
+            head -n 20 "$f" || true
+            echo "--- matching error/fatal/assert/exception lines (last 300) ---"
+            grep -Ein 'error|fatal|assert|exception|crash|invalid|failed|missing|unknown|duplicate|could not|not found|stack|access violation' "$f" | tail -n 300 || true
+            echo "--- last 250 lines ---"
+            tail -n 250 "$f" || true
+          done < <(find /tmp/issue3 -type f \( -iname '*.log' -o -iname '*.txt' -o -iname '*.meta' \) -print0)
