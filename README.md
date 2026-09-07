@@ -2,7 +2,7 @@
 
 Версия **0.2.0** для Victoria 3 `1.13.*`.
 
-`0.2.0` основана на `0.1.0`: весь ранее добавленный блок standard companies, prestige goods и новых товаров сохранен. Главная новая часть версии - стартовый сетап зданий для `UKR`, `BYE` и `POL` по issue #1, а также отдельная польская армия.
+`0.2.0` основана на `0.1.0`: весь ранее добавленный блок standard companies, prestige goods и новых товаров сохранен. Главная новая часть версии - стартовый сетап зданий для `UKR`, `BYE` и `POL` по issue #1, отдельная польская армия, а также адаптация институционального слоя Persistent Assets по issue #4.
 
 ## Что изменилось в 0.2.0
 
@@ -98,6 +98,21 @@
 - все части привязаны к `STATE_MAZOVIA` (Warsaw);
 - HQ: `sr:region_eastern_europe`.
 
+## Министерства и Persistent Assets (issue #4)
+
+Запрос issue #4 относится к Steam Workshop item `3746723955`, **Persistent Assets**. Из него в `0.2.0` адаптирован подтвержденный институциональный слой, а не весь overhaul.
+
+- Вкладка `Institutions` локализована как **«Министерства»**.
+- Семь ванильных институтов отображаются как соответствующие министерства.
+- Для Education и Healthcare глобальные эффекты института уменьшены на 50% через аддитивный `INJECT`.
+- Добавлены физические здания `building_vicmod_school` и `building_vicmod_hospital`.
+- Production Method школы автоматически соответствует действующему закону Religious / Private / Public Schools.
+- Production Method больницы соответствует Charitable / Private / Public Healthcare.
+- Полностью укомплектованный уровень здания дает штату локальную половину соответствующего ванильного эффекта. Эффекты используют `workforce_scaled`, поэтому пустое здание не дает полный бонус.
+- Housing, Streets, Commercial/Industrial Space и остальные системы Persistent Assets не переносятся, поскольку issue просит именно адаптацию министерств/институтов.
+
+Подробности реализации и smoke-test находятся в `docs/ISSUE_4_MINISTRIES.md`.
+
 ## Новые файлы 0.2.0
 
 ```text
@@ -107,8 +122,15 @@ common/history/buildings/vicmod_issue1_bye_buildings.txt
 common/history/buildings/vicmod_issue1_pol_buildings.txt
 common/history/military_formations/vicmod_issue1_pol_army.txt
 common/on_actions/vicmod_issue1_on_actions.txt
+common/laws/vicmod_persistent_assets_institutions.txt
+common/buildings/vicmod_persistent_assets_social_buildings.txt
+common/production_method_groups/vicmod_persistent_assets_social_pmg.txt
+common/production_methods/vicmod_persistent_assets_social_pm.txt
 localization/russian/vicmod_issue1_l_russian.yml
 localization/english/vicmod_issue1_l_english.yml
+localization/russian/replace/vicmod_persistent_assets_l_russian.yml
+localization/english/replace/vicmod_persistent_assets_l_english.yml
+docs/ISSUE_4_MINISTRIES.md
 ```
 
 ## Сохранено из 0.1.0
@@ -130,7 +152,10 @@ localization/english/vicmod_issue1_l_english.yml
 4. отображение Kaunas как целевого региона блока «Литва» и East Prussia как Warmia при польской локализации;
 5. production methods для ферм, шахт, лесопилок, стекольных и строительных зданий;
 6. появление польской армии 25/10/7 в Eastern Europe;
-7. отсутствие регрессий функциональности `0.1.0`.
+7. вкладка институтов отображается как «Министерства»;
+8. School и Hospital доступны при соответствующих законах/институтах и используют правильный PM;
+9. глобальные эффекты Education/Healthcare составляют половину ванильных, а занятые School/Hospital дают локальную половину;
+10. отсутствие регрессий функциональности `0.1.0`.
 
 ### Примечание по Fishing Wharves
 
@@ -138,4 +163,4 @@ Issue требует по 15 Fishing Wharves в подходящих регио�
 
 ## Статус
 
-`0.2.0`: реализация запросов из issue #1, подготовлена для игрового smoke-test.
+`0.2.0`: реализация запросов из issue #1 и адаптация институционального слоя Persistent Assets из issue #4, подготовлена для игрового smoke-test.
